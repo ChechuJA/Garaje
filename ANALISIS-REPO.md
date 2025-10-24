@@ -110,7 +110,9 @@
 - Botón flotante accesible desde cualquier tab
 - Ventana de chat optimizada para móvil
 - Responde a:
+  - `"top"` o `"mejores"` o `"chollos"` → **TOP 10 mejores oportunidades** (ordenadas por precio/m² y ahorro) 🏆
   - `"plaza 401"` → Ficha completa con OFERTA y gastos
+  - `"401"` → Atajo (solo número)
   - `"calculame el precio del m2 si la plaza 401 vale 9000€"` → Cálculo precio/m², OFERTA recomendada, comparación con objetivo, ahorro, gastos
   - `"APACAAQUITUCOCHE marcar 401 favorito"` → Marca favorito
   - `"APACAAQUITUCOCHE marcar 401 vendida"` → Marca vendida
@@ -233,21 +235,27 @@
 
 ## 📱 Uso Óptimo de la App en Terreno
 
-### Escenario 1: El vendedor te enseña plazas aleatorias
+### Escenario 1: Antes de la visita — Identifica los chollos
 1. Abre la app en el móvil
 2. Pulsa el botón flotante 🚗
-3. Escribe el número de plaza que estás viendo
-4. Lee OFERTA y argumentos al instante
-5. **No muestres la pantalla al vendedor** (mantén tu estrategia privada)
+3. Escribe `"top"` o `"mejores"`
+4. Guarda mentalmente las 3 primeras (🥇🥈🥉)
+5. Pide al vendedor ver esas plazas específicamente
 
-### Escenario 2: Te dice "puedo dejártela en X€"
+### Escenario 2: El vendedor te enseña plazas aleatorias
+1. Pulsa el botón flotante 🚗
+2. Escribe el número de plaza que estás viendo
+3. Lee OFERTA y argumentos al instante
+4. **No muestres la pantalla al vendedor** (mantén tu estrategia privada)
+
+### Escenario 3: Te dice "puedo dejártela en X€"
 1. Pulsa 🚗
 2. Escribe: `"calculame el precio del m2 si la plaza 401 vale 10000"` (reemplaza 401 y 10000 por plaza y precio)
 3. Mira si el precio/m² supera 218,29 €/m²
 4. Si supera → rechaza o contraoferta más baja
 5. Si está por debajo → acepta o negocia un poco más bajo
 
-### Escenario 3: Visitas múltiples plazas en una hora
+### Escenario 4: Visitas múltiples plazas en una hora
 1. Usa la **Tabla Básica** (vista móvil)
 2. Ordena por "Ahorro" descendente
 3. Marca vendidas las que ya no estén disponibles

@@ -18,10 +18,17 @@ Mejoras posibles:
 - Permitir comparar varios lotes y exportar como propuesta de compra.
 
 Funcionalidad añadida:
+- **Agente Flotante 🚗:** Botón flotante en esquina inferior derecha con chat inteligente. Comandos:
+  - `"top"` o `"mejores"` → TOP 10 mejores oportunidades (precio/m² más bajo + mayor ahorro)
+  - `"plaza 401"` o `"401"` → Ficha completa con OFERTA, ahorro y gastos
+  - `"calculame el precio del m2 si la plaza 401 vale 9000€"` → Cálculo interactivo
+  - `"APACAAQUITUCOCHE marcar 401 favorito"` → Marca favorito
+  - `"APACAAQUITUCOCHE marcar 401 vendida"` → Marca vendida
+- **Guía de Visita 🗺️:** Checklist para visitas presenciales + estrategia de negociación
 - Favoritos: marca una plaza como favorita (se guarda en localStorage del navegador).
 - Notas: añade notas libres por plaza (ej.: "tuberías encima", "columna molesta"). Las notas se guardan en localStorage y son visibles sólo en el navegador donde se escriben.
- - Marcar como VENDIDA: puedes marcar una plaza como vendida (aparece tachada y con menor opacidad). Se guarda en localStorage.
- - Filtros por columna: cajas de texto bajo los encabezados para filtrado instantáneo por UR, nº plaza, precio, ubicación o metros.
+- Marcar como VENDIDA: puedes marcar una plaza como vendida (aparece tachada y con menor opacidad). Se guarda en localStorage.
+- Filtros por columna: cajas de texto bajo los encabezados para filtrado instantáneo por UR, nº plaza, precio, ubicación o metros.
 
  - Ocultar vendidas: activa el checkbox "Ocultar vendidas" para no mostrar las plazas ya vendidas.
  - Recomendación: botón "Recomendar mejor lote" selecciona las 3 plazas con mayor ahorro (estimado − precio) entre las plazas no vendidas.
