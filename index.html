@@ -15,6 +15,9 @@
     .actions{margin-top:12px}
     .hint{color:#666;font-size:0.9rem}
     button{padding:6px 10px}
+    th .sort-arrow{margin-left:6px;font-size:0.8em;opacity:0.6}
+    th.sorted{background:#fff4c2}
+    tr.sold td{opacity:0.5;text-decoration:line-through}
   </style>
 </head>
 <body>
@@ -37,7 +40,8 @@
       </select>
     </label>
 
-    <button id="recommend">Recomendar mejor lote de 3</button>
+  <button id="recommend">Recomendar mejor lote (top 3 ahorro, no vendidas)</button>
+  <label style="margin-left:8px"><input type="checkbox" id="hideSold"> Ocultar vendidas</label>
     <button id="share">Compartir vista</button>
     <button id="exportCsv">Exportar CSV</button>
     <button id="exportSel">Exportar selección (JSON)</button>
@@ -55,7 +59,7 @@
     <span id="searchResult" style="margin-left:12px;color:#222"></span>
   </div>
 
-  <div class="actions">
+    <div class="actions">
     <strong>Seleccionadas (máx 3):</strong>
     <span id="selectedList">—</span>
     <button id="clear">Limpiar selección</button>
@@ -65,14 +69,25 @@
     <thead>
       <tr>
         <th></th>
-        <th data-key="ur">UR/REGISTRAL</th>
-        <th data-key="plaza">Nº PLAZA</th>
-        <th data-key="precio">PRECIO</th>
-        <th data-key="ubicacion">UBICACIÓN</th>
-        <th data-key="metros">METROS</th>
-        <th data-key="estimado">Estimado (€)</th>
-        <th data-key="ahorro">Ahorro (€)</th>
+      <th data-key="ur">UR/REGISTRAL <span class="sort-arrow"></span></th>
+        <th data-key="plaza">Nº PLAZA <span class="sort-arrow"></span></th>
+        <th data-key="precio">PRECIO <span class="sort-arrow"></span></th>
+        <th data-key="ubicacion">UBICACIÓN <span class="sort-arrow"></span></th>
+        <th data-key="metros">METROS <span class="sort-arrow"></span></th>
+        <th data-key="estimado">Estimado (€) <span class="sort-arrow"></span></th>
+        <th data-key="ahorro">Ahorro (€) <span class="sort-arrow"></span></th>
             <th>Acciones</th>
+      </tr>
+      <tr id="filtersRow">
+        <th></th>
+        <th><input data-filter="ur" style="width:100%" placeholder="filtrar"></th>
+        <th><input data-filter="plaza" style="width:100%" placeholder="filtrar"></th>
+        <th><input data-filter="precio" style="width:100%" placeholder="filtrar"></th>
+        <th><input data-filter="ubicacion" style="width:100%" placeholder="filtrar"></th>
+        <th><input data-filter="metros" style="width:100%" placeholder="filtrar"></th>
+        <th></th>
+        <th></th>
+        <th></th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -92,9 +107,11 @@
         const tr = document.createElement('tr')
         if(selected.has(p.plaza)) tr.classList.add('selected')
         const ahorro = +(p.estimado - p.precio)
-        const favs = JSON.parse(localStorage.getItem('plazas_favs')||'{}')
-        const notes = JSON.parse(localStorage.getItem('plazas_notes')||'{}')
-        const isFav = !!favs[p.plaza]
+  const favs = JSON.parse(localStorage.getItem('plazas_favs')||'{}')
+  const notes = JSON.parse(localStorage.getItem('plazas_notes')||'{}')
+  const sold = JSON.parse(localStorage.getItem('plazas_sold')||'{}')
+  const isFav = !!favs[p.plaza]
+  const isSold = !!sold[p.plaza]
         tr.innerHTML = `
           <td><input type="checkbox" data-plaza="${p.plaza}" ${selected.has(p.plaza)?'checked':''}></td>
           <td>${p.ur}</td>
@@ -107,8 +124,10 @@
           <td>
             <button class="fav" data-plaza="${p.plaza}">${isFav? '★' : '☆'} Favorito</button>
             <button class="note" data-plaza="${p.plaza}">Notas</button>
+            <button class="sold" data-plaza="${p.plaza}">${isSold? 'VENDIDA' : 'Marcar vendida'}</button>
           </td>
         `
+        if(isSold) tr.classList.add('sold')
         tbody.appendChild(tr)
       })
       attachCheckboxHandlers()
@@ -139,6 +158,53 @@
           localStorage.setItem('plazas_notes', JSON.stringify(notes))
           render()
         }
+      })
+      document.querySelectorAll('button.sold').forEach(btn=>{
+        btn.onclick = ()=>{
+          const id = btn.dataset.plaza
+          const sold = JSON.parse(localStorage.getItem('plazas_sold')||'{}')
+          if(sold[id]) delete sold[id]
+          else sold[id] = true
+          localStorage.setItem('plazas_sold', JSON.stringify(sold))
+          render()
+        }
+      })
+    }
+
+    // Recommend: select top N by ahorro among not sold
+    document.getElementById('recommend').onclick = ()=>{
+      const N = 3
+      const sold = JSON.parse(localStorage.getItem('plazas_sold')||'{}')
+      const candidates = plazas.filter(p=>!sold[p.plaza])
+      candidates.sort((a,b)=> (b.estimado - b.precio) - (a.estimado - a.precio))
+      const top = candidates.slice(0,N).map(p=>p.plaza)
+      selected = new Set(top)
+      localStorage.setItem('plazas_selected', JSON.stringify(Array.from(selected)))
+      render(); updateUrlState()
+    }
+
+    // Filters
+    document.querySelectorAll('#filtersRow input[data-filter]').forEach(inp=>{
+      inp.addEventListener('input', ()=>{
+        applyFilters()
+      })
+    })
+    function applyFilters(){
+      const filters = {}
+      document.querySelectorAll('#filtersRow input[data-filter]').forEach(inp=>{ if(inp.value) filters[inp.dataset.filter]=inp.value.toLowerCase() })
+      const hideSold = document.getElementById('hideSold')?.checked
+      document.querySelectorAll('#table tbody tr').forEach(tr=>{
+        let visible = true
+        const cells = tr.querySelectorAll('td')
+        const m = { ur:1, plaza:2, precio:3, ubicacion:4, metros:5 }
+        for(const k in filters){
+          const idx = m[k]
+          if(idx===undefined) continue
+          const text = (cells[idx]?.textContent||'').toLowerCase()
+          if(!text.includes(filters[k])) { visible=false; break }
+        }
+        if(hideSold && tr.classList.contains('sold')) visible = false
+        tr.style.display = visible ? '' : 'none'
       })
     }
 
@@ -252,6 +318,36 @@
       return plazas.find(p=>p.plaza === Number(n))
     }
 
+    // Header click sorting: toggle sort on any th[data-key]
+    function clearHeaderArrows(){
+      document.querySelectorAll('th[data-key] .sort-arrow').forEach(s=>s.textContent='')
+    }
+    function setHeaderArrow(key,order){
+      clearHeaderArrows()
+      document.querySelectorAll('th[data-key]').forEach(t=>t.classList.remove('sorted'))
+      const th = document.querySelector('th[data-key="'+key+'"]')
+      if(!th) return
+      th.classList.add('sorted')
+      const arrow = th.querySelector('.sort-arrow')
+      arrow.textContent = order === 'asc' ? '▲' : '▼'
+      // persist last sort
+      localStorage.setItem('plazas_last_sort', JSON.stringify({field:key,order:order}))
+    }
+    document.querySelectorAll('th[data-key]').forEach(th=>{
+      th.addEventListener('click', ()=>{
+        const key = th.dataset.key
+        let currentField = document.getElementById('sortField').value
+        let currentOrder = document.getElementById('sortOrder').value
+        if(currentField === key) currentOrder = currentOrder === 'asc' ? 'desc' : 'asc'
+        else currentOrder = 'desc'
+        document.getElementById('sortField').value = key
+        document.getElementById('sortOrder').value = currentOrder
+        setHeaderArrow(key,currentOrder)
+        sortBy(key,currentOrder)
+        updateUrlState()
+      })
+    })
+
     function updateUrlState(){
       const params = new URLSearchParams()
       params.set('sort', document.getElementById('sortField').value)
@@ -268,7 +364,14 @@
       const saved = JSON.parse(localStorage.getItem('plazas_selected')||'[]')
       if(Array.isArray(saved)) saved.forEach(n=>selected.add(Number(n)))
       applyUrlParams()
-      sortBy(document.getElementById('sortField').value, document.getElementById('sortOrder').value)
+      // restore last sort from localStorage if present
+      const last = JSON.parse(localStorage.getItem('plazas_last_sort')||'null')
+      const field = last?.field || document.getElementById('sortField').value
+      const order = last?.order || document.getElementById('sortOrder').value
+      document.getElementById('sortField').value = field
+      document.getElementById('sortOrder').value = order
+      sortBy(field, order)
+      setHeaderArrow(field, order)
     })
   </script>
 </body>
