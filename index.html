@@ -247,7 +247,7 @@
         let visible = true
         const cells = tr.querySelectorAll('td')
         // updated column indexes after adding ITP column
-        const m = { ur:1, plaza:2, precio:3, ubicacion:5, metros:6 }
+        const m = { ur:1, plaza:2, precio:3, itp:4, ubicacion:5, metros:6 }
         for(const k in filters){
           const idx = m[k]
           if(idx===undefined) continue
