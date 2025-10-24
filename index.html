@@ -42,6 +42,13 @@
     @media (max-width:800px){
       .controls{flex-direction:column;align-items:stretch}
       header.appbar{flex-direction:column;align-items:flex-start}
+      body{font-size:16px}
+      button{min-height:44px;font-size:16px}
+      input{min-height:44px;font-size:16px}
+      th,td{padding:12px 8px;font-size:15px}
+      .badge{font-size:14px;padding:8px 12px}
+      #floatingChatBtn{width:70px;height:70px;font-size:32px;bottom:16px;right:16px}
+      #floatingChatWindow{width:95vw;max-width:none;height:70vh;bottom:100px;right:2.5vw}
     }
     /* sort arrows */
     th .sort-arrow{margin-left:6px;font-size:0.8em;opacity:0.6;display:inline-flex;flex-direction:column;line-height:0.8}
@@ -67,14 +74,61 @@
 
   <div class="container">
     <!-- Simple tab bar to avoid long scrolling -->
-    <div id="tabBar" style="display:flex;gap:8px;margin-bottom:12px">
+    <div id="tabBar" style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
       <button class="tabBtn" data-tab="principal">Principal</button>
       <button class="tabBtn" data-tab="basic">Tabla básica</button>
+      <button class="tabBtn" data-tab="guia">🗺️ Guía visita</button>
       <button class="tabBtn" data-tab="original">ORIGINAL</button>
       <button class="tabBtn" data-tab="gastos">Gastos Totales</button>
       <button class="tabBtn" data-tab="agente">Agente</button>
     </div>
     <p class="hint">Selecciona hasta 3 plazas para crear un lote. Usa el control de ordenación o haz clic en el encabezado de la tabla. Pulsa "Compartir vista" para obtener una URL con selección/orden.</p>
+
+    <!-- Guía rápida para visitas presenciales -->
+    <section id="guiaCard" style="margin-top:12px;padding:16px;border-radius:8px;background:#fff;border:1px solid #d0e8ff">
+      <h3 style="margin:0 0 12px 0;color:#0066cc">🗺️ Guía Rápida de Visita</h3>
+      <div style="background:#f0f9ff;padding:12px;border-radius:8px;margin-bottom:12px">
+        <strong style="color:#0066cc">📋 Checklist en Terreno:</strong>
+        <ul style="margin:8px 0;padding-left:20px;line-height:1.8">
+          <li>📏 <strong>Mide</strong> largo × ancho (verifica metros reales vs anunciados)</li>
+          <li>🚗 <strong>Prueba entrada/salida</strong> con tu coche (radio de giro)</li>
+          <li>🏗️ <strong>Observa columnas/obstáculos</strong> que dificulten maniobras</li>
+          <li>💡 <strong>Iluminación</strong> y ventilación del sótano</li>
+          <li>💧 <strong>Humedad/filtraciones</strong> en paredes y techo</li>
+          <li>🔒 <strong>Acceso y seguridad</strong> (puerta automática, rampa estado)</li>
+          <li>📍 <strong>Distancia al ascensor</strong> y facilidad de carga/descarga</li>
+          <li>🚰 <strong>Tuberías</strong> o instalaciones que reduzcan altura útil</li>
+        </ul>
+      </div>
+      <div style="background:#fff9e6;padding:12px;border-radius:8px;margin-bottom:12px">
+        <strong style="color:#d97706">💰 Estrategia de Negociación:</strong>
+        <ul style="margin:8px 0;padding-left:20px;line-height:1.8">
+          <li>🎯 <strong>Objetivo:</strong> Todas las plazas a ≤218,29 €/m² (plaza 401 como referencia)</li>
+          <li>📉 <strong>Reducción mínima:</strong> 4.000 € sobre precio de venta</li>
+          <li>🔍 <strong>Argumentos:</strong>
+            <ul style="margin-top:4px">
+              <li>Plazas 300/301 están a 10.500€ (usa como referencia baja)</li>
+              <li>P.S.3 (sótano 3) debe ser más barato que P.S.1 y P.S.2</li>
+              <li>Plazas similares tienen precios muy diferentes (inconsistencia)</li>
+            </ul>
+          </li>
+          <li>💵 <strong>Oferta ejemplo Plaza 401:</strong> Precio 13.000€ → Tu oferta 9.000€</li>
+          <li>⚡ <strong>As bajo la manga:</strong> Pago rápido/contado si aceptan tu precio</li>
+        </ul>
+      </div>
+      <div style="background:#f0fdf4;padding:12px;border-radius:8px">
+        <strong style="color:#059669">🎯 Mejores Oportunidades (€/m² más bajo):</strong>
+        <ol style="margin:8px 0;padding-left:20px;line-height:1.8">
+          <li><strong>Plaza 368</strong>: 62,97 m² × 13.000€ = 206,46 €/m² — Muy grande</li>
+          <li><strong>Plaza 336</strong>: 61,20 m² × 13.000€ = 212,42 €/m² — Muy grande</li>
+          <li><strong>Plazas 320 y 356</strong>: ~50 m² × 11.000€ = 220,71 €/m² ⭐ <span style="color:#059669;font-weight:700">MEJOR RELACIÓN</span></li>
+          <li><strong>Plazas 300/301</strong>: ~28 m² × 10.500€ — Más baratas absolutas</li>
+        </ol>
+        <div style="margin-top:8px;padding:8px;background:#fff;border-radius:6px;border:1px solid #d1fae5">
+          💡 <strong>Tip:</strong> Usa el botón flotante 🚗 para consultar cualquier plaza al instante mientras visitas.
+        </div>
+      </div>
+    </section>
 
     <!-- Tabla básica: compacta para móviles -->
     <section id="basicCard" style="margin-top:12px;padding:12px;border-radius:8px;background:#fff;border:1px solid #eef3ff">
@@ -145,7 +199,7 @@
     <span id="searchResult" style="margin-left:12px;color:#222"></span>
   </div>
 
-  <!-- Chat-like agent panel -->
+  <!-- Chat-like agent panel (inside tabs) -->
   <section id="agentPanel" style="margin-top:18px;border:1px solid #e6eefb;padding:12px;border-radius:8px;background:#fbfcff">
     <h2 style="margin:0 0 8px 0">Agente "APACAAQUITUCOCHE" — Pregúntame por una plaza</h2>
     <div id="chat" style="height:220px;overflow:auto;border:1px solid #eef3ff;padding:10px;background:#fff;border-radius:8px"></div>
@@ -155,6 +209,27 @@
       <button id="agentClear">Limpiar</button>
     </div>
   </section>
+
+  <!-- Floating chat button (mobile-optimized) -->
+  <button id="floatingChatBtn" style="position:fixed;bottom:20px;right:20px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#0066cc,#7c3aed);border:none;box-shadow:0 4px 20px rgba(124,58,237,0.4);cursor:pointer;z-index:9999;display:flex;align-items:center;justify-content:center;font-size:28px;transition:transform 0.2s,box-shadow 0.2s" title="Abrir asistente de negociación">
+    🚗
+  </button>
+
+  <!-- Floating chat window -->
+  <div id="floatingChatWindow" style="position:fixed;bottom:90px;right:20px;width:90vw;max-width:400px;height:500px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.15);z-index:10000;display:none;flex-direction:column;overflow:hidden">
+    <div style="background:linear-gradient(90deg,#0066cc,#7c3aed);color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:24px">🚗</span>
+        <strong>Asistente Negociación</strong>
+      </div>
+      <button id="closeChatBtn" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center">×</button>
+    </div>
+    <div id="floatingChat" style="flex:1;overflow:auto;padding:12px;background:#f9fbff"></div>
+    <div style="padding:12px;border-top:1px solid #e6eefb;background:#fff;display:flex;gap:8px">
+      <input id="floatingAgentInput" placeholder="Ej: plaza 401 o calculame..." style="flex:1;padding:12px;border-radius:8px;border:1px solid #e6eefb;font-size:16px">
+      <button id="floatingAgentSend" style="padding:12px 20px;border-radius:8px;background:linear-gradient(90deg,#0066cc,#7c3aed);color:#fff;border:none;cursor:pointer;font-weight:700">Enviar</button>
+    </div>
+  </div>
 
   <div class="actions">
     <strong>Seleccionadas (máx 3):</strong>
@@ -240,6 +315,17 @@
         }
       }
       return Math.max(0, cand1)
+    }
+
+    // Parse a money string like "11.300,00" or "9000" into a Number (euros)
+    function parseMoneyStr(s){
+      if(typeof s === 'number') return s
+      if(!s) return 0
+      const str = String(s).replace(/€/g,'').trim()
+      // remove thousand separators (.) and replace decimal comma with dot
+      const cleaned = str.replace(/\./g,'').replace(/,/g,'.').replace(/\s+/g,'')
+      const v = Number(cleaned)
+      return isNaN(v) ? 0 : v
     }
 
     function render(){
@@ -770,6 +856,33 @@
       const t = (text||'').trim()
       if(!t) return
       appendChat('Tú', t.replace(/</g,'&lt;'))
+      // detect calculation requests like:
+      // "calculame el precio del m2 si la plaza 401 vale 9.000€"
+      const calcMatch = t.match(/\bcalculame(?:|\s+el)?\s+precio\s+del\s+m2\s+si\s+la\s+plaza\s*(\d+)\s*vale\s*([\d\.,\s]+)\s*€?/i)
+                     || t.match(/\bcalculame.*precio.*m2.*plaza\s*(\d+).*vale\s*([\d\.,\s]+)\s*€?/i)
+      if(calcMatch){
+        const id = Number(calcMatch[1])
+        const priceStr = calcMatch[2]
+        const p = lookupPlaza(id)
+        if(!p){ appendChat('APACAAQUITUCOCHE', `No encuentro la plaza ${id}.`) ; return }
+        const priceNum = parseMoneyStr(priceStr)
+        const metros = Number(p.metros) || 0
+        const perM2 = metros ? (priceNum / metros) : null
+        const ofertaFromGivenPrice = ofertaFor({precio: priceNum, metros: metros})
+        const itp = ofertaFromGivenPrice * 0.08
+        const notMin = 400, notMax = 600, gestMin = 100, gestMax = 150
+        const totalMin = itp + notMin + gestMin
+        const totalMax = itp + notMax + gestMax
+        let out = ''
+        out += `<div>Si la plaza <strong>${id}</strong> se pide <strong>${fmtMoney(priceNum)}</strong>:</div>`
+        if(perM2) out += `<div>Precio/m² resultante: <strong>${fmtMoney(perM2)}</strong> — objetivo: <strong>${fmtMoney(TARGET_PER_M2)}</strong>/m²</div>`
+        if(perM2 && perM2 > TARGET_PER_M2) out += `<div style="color:#b95">Nota: el precio por m² propuesto excede el objetivo ${fmtMoney(TARGET_PER_M2)}/m²; podrías intentar igualar a ${fmtMoney(TARGET_PER_M2 * metros)}</div>`
+        out += `<div style="margin-top:6px">OFERTA recomendada (aplicando reglas): <strong>${fmtMoney(ofertaFromGivenPrice)}</strong> — Ahorro frente al precio pedido: <strong>${fmtMoney(priceNum - ofertaFromGivenPrice)}</strong></div>`
+        out += `<div class="meta">Gastos aprox (sobre OFERTA): ITP ${fmtMoney(itp)} — Notaría ${fmtMoney(notMin)}–${fmtMoney(notMax)} — Gestoría ${fmtMoney(gestMin)}–${fmtMoney(gestMax)}</div>`
+        out += `<div style="margin-top:6px"><strong>Total aprox:</strong> ${fmtMoney(totalMin)} – ${fmtMoney(totalMax)}</div>`
+        appendChat('APACAAQUITUCOCHE', out)
+        return
+      }
       // detect commands: 'plaza 401' or just a number
       const plazaMatch = t.match(/\bplaza\s*(\d+)\b/i) || t.match(/^\s*(\d+)\s*$/)
       // detect APACAAQUITUCOCHE commands like: APACAAQUITUCOCHE marcar 401 favorito
@@ -853,17 +966,181 @@
     document.getElementById('agentInput').addEventListener('keydown', e=>{ if(e.key === 'Enter') { e.preventDefault(); document.getElementById('agentSend').click() } })
     document.getElementById('agentClear').addEventListener('click', ()=>{ document.getElementById('chat').innerHTML = '' })
 
+    // --- Floating chat window logic ---
+    const floatingBtn = document.getElementById('floatingChatBtn')
+    const floatingWindow = document.getElementById('floatingChatWindow')
+    const closeBtn = document.getElementById('closeChatBtn')
+    const floatingChatDiv = document.getElementById('floatingChat')
+    const floatingInput = document.getElementById('floatingAgentInput')
+    const floatingSend = document.getElementById('floatingAgentSend')
+
+    function appendFloatingChat(who, html){
+      const el = document.createElement('div')
+      el.style.marginBottom = '12px'
+      el.style.padding = '10px'
+      el.style.borderRadius = '8px'
+      el.style.background = who === 'Tú' ? '#e8f0ff' : '#fff'
+      el.style.border = '1px solid ' + (who === 'Tú' ? '#d0e1ff' : '#e6eefb')
+      el.innerHTML = `<strong style="color:${who === 'Tú' ? '#0066cc' : '#7c3aed'}">${who}:</strong> <div style="margin-top:4px">${html}</div>`
+      floatingChatDiv.appendChild(el)
+      floatingChatDiv.scrollTop = floatingChatDiv.scrollHeight
+    }
+
+    function processFloatingInput(text){
+      const t = (text||'').trim()
+      if(!t) return
+      appendFloatingChat('Tú', t.replace(/</g,'&lt;'))
+      
+      // detect calculation requests
+      const calcMatch = t.match(/\bcalculame(?:|\s+el)?\s+precio\s+del\s+m2\s+si\s+la\s+plaza\s*(\d+)\s*vale\s*([\d\.,\s]+)\s*€?/i)
+                     || t.match(/\bcalculame.*precio.*m2.*plaza\s*(\d+).*vale\s*([\d\.,\s]+)\s*€?/i)
+      if(calcMatch){
+        const id = Number(calcMatch[1])
+        const priceStr = calcMatch[2]
+        const p = lookupPlaza(id)
+        if(!p){ appendFloatingChat('🚗 Asistente', `No encuentro la plaza ${id}.`) ; return }
+        const priceNum = parseMoneyStr(priceStr)
+        const metros = Number(p.metros) || 0
+        const perM2 = metros ? (priceNum / metros) : null
+        const ofertaFromGivenPrice = ofertaFor({precio: priceNum, metros: metros})
+        const itp = ofertaFromGivenPrice * 0.08
+        const notMin = 400, notMax = 600, gestMin = 100, gestMax = 150
+        const totalMin = itp + notMin + gestMin
+        const totalMax = itp + notMax + gestMax
+        let out = ''
+        out += `<div><strong>Plaza ${id}</strong> a <strong>${fmtMoney(priceNum)}</strong>:</div>`
+        if(perM2) out += `<div>Precio/m²: <strong>${fmtMoney(perM2)}</strong> vs objetivo <strong>${fmtMoney(TARGET_PER_M2)}</strong></div>`
+        if(perM2 && perM2 > TARGET_PER_M2) out += `<div style="color:#d97706;margin-top:4px">⚠️ Excede objetivo. Intenta ofrecer ${fmtMoney(TARGET_PER_M2 * metros)}</div>`
+        out += `<div style="margin-top:8px">💰 <strong>OFERTA recomendada:</strong> ${fmtMoney(ofertaFromGivenPrice)}</div>`
+        out += `<div>📉 Ahorro: ${fmtMoney(priceNum - ofertaFromGivenPrice)}</div>`
+        out += `<div style="margin-top:8px;font-size:0.9em;color:#666">Gastos: ITP ${fmtMoney(itp)} + Notaría ${fmtMoney(notMin)}-${fmtMoney(notMax)} + Gestoría ${fmtMoney(gestMin)}-${fmtMoney(gestMax)}</div>`
+        out += `<div style="margin-top:4px"><strong>Total aprox:</strong> ${fmtMoney(totalMin)} - ${fmtMoney(totalMax)}</div>`
+        appendFloatingChat('🚗 Asistente', out)
+        setTimeout(()=>attachFloatingButtons(),50)
+        return
+      }
+
+      // detect plaza lookup
+      const plazaMatch = t.match(/\bplaza\s*(\d+)\b/i) || t.match(/^\s*(\d+)\s*$/)
+      if(plazaMatch){
+        const id = Number(plazaMatch[1])
+        const p = lookupPlaza(id)
+        if(!p){ appendFloatingChat('🚗 Asistente', `No encuentro la plaza ${id}.`); return }
+        const oferta = ofertaFor(p)
+        const ahorro = p.precio - oferta
+        const perM2 = p.precio && p.metros ? (p.precio / p.metros) : null
+        const ofertaPerM2 = oferta && p.metros ? (oferta / p.metros) : null
+        let out = ''
+        out += `<div><strong>Plaza ${p.plaza}</strong> — ${p.ubicacion} — ${p.metros} m²</div>`
+        out += `<div style="margin-top:6px">💵 Precio: <strong>${p.precio_str}</strong> (${perM2 ? fmtMoney(perM2)+'/m²' : 'N/D'})</div>`
+        out += `<div>💰 <strong>OFERTA:</strong> ${fmtMoney(oferta)} (${ofertaPerM2 ? fmtMoney(ofertaPerM2)+'/m²' : 'N/D'})</div>`
+        out += `<div>📉 Ahorro: <strong style="color:#059669">${fmtMoney(ahorro)}</strong></div>`
+        const itp = oferta * 0.08
+        const totalMin = itp + 400 + 100
+        const totalMax = itp + 600 + 150
+        out += `<div style="margin-top:8px;font-size:0.9em;color:#666">Gastos aprox: ${fmtMoney(totalMin)} - ${fmtMoney(totalMax)}</div>`
+        out += `<div style="margin-top:8px"><button data-action="fav" data-plaza="${p.plaza}" style="padding:6px 12px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer;margin-right:6px">⭐ Favorito</button> <button data-action="sold" data-plaza="${p.plaza}" style="padding:6px 12px;border-radius:6px;border:1px solid #ddd;background:#fff;cursor:pointer">🚫 Vendida</button></div>`
+        appendFloatingChat('🚗 Asistente', out)
+        setTimeout(()=>attachFloatingButtons(),50)
+        return
+      }
+
+      // detect APACAAQUITUCOCHE commands
+      const special = t.match(/APACAAQUITUCOCHE\s+([^\n]+)/i)
+      if(special){
+        const cmd = special[1].trim()
+        const m = cmd.match(/marcar\s*(\d+)\s*(favorito|vendida|vendido|vende)/i)
+        if(m){
+          const id = Number(m[1])
+          const what = m[2].toLowerCase()
+          if(/favorito/.test(what)){
+            const favs = JSON.parse(localStorage.getItem('plazas_favs')||'{}')
+            favs[id] = true
+            localStorage.setItem('plazas_favs', JSON.stringify(favs))
+            render()
+            appendFloatingChat('🚗 Asistente', `✅ Plaza ${id} marcada como favorita.`)
+            return
+          }
+          if(/vend|vendida|vende/.test(what)){
+            const sold = JSON.parse(localStorage.getItem('plazas_sold')||'{}')
+            sold[id] = true
+            localStorage.setItem('plazas_sold', JSON.stringify(sold))
+            render()
+            appendFloatingChat('🚗 Asistente', `✅ Plaza ${id} marcada como VENDIDA.`)
+            return
+          }
+        }
+        appendFloatingChat('🚗 Asistente', `No reconozco ese comando: ${cmd.replace(/</g,'&lt;')}`)
+        return
+      }
+
+      // fallback
+      appendFloatingChat('🚗 Asistente', `Escribe:<br>• "plaza 401" para ver detalles<br>• "calculame el precio del m2 si la plaza 401 vale 9000€"<br>• "APACAAQUITUCOCHE marcar 401 favorito"`)
+    }
+
+    function attachFloatingButtons(){
+      document.querySelectorAll('#floatingChat button[data-action]').forEach(b=>{
+        if(b.dataset.bound) return
+        b.dataset.bound = '1'
+        b.addEventListener('click', ()=>{
+          const a = b.dataset.action
+          const id = Number(b.dataset.plaza)
+          if(a === 'fav'){
+            const favs = JSON.parse(localStorage.getItem('plazas_favs')||'{}')
+            favs[id] = true
+            localStorage.setItem('plazas_favs', JSON.stringify(favs))
+            render()
+            appendFloatingChat('🚗 Asistente', `✅ Plaza ${id} marcada como favorita.`)
+          } else if(a === 'sold'){
+            const sold = JSON.parse(localStorage.getItem('plazas_sold')||'{}')
+            sold[id] = true
+            localStorage.setItem('plazas_sold', JSON.stringify(sold))
+            render()
+            appendFloatingChat('🚗 Asistente', `✅ Plaza ${id} marcada como VENDIDA.`)
+          }
+        })
+      })
+    }
+
+    floatingBtn.addEventListener('click', ()=>{
+      floatingWindow.style.display = 'flex'
+      floatingBtn.style.display = 'none'
+    })
+
+    closeBtn.addEventListener('click', ()=>{
+      floatingWindow.style.display = 'none'
+      floatingBtn.style.display = 'flex'
+    })
+
+    floatingSend.addEventListener('click', ()=>{
+      const val = floatingInput.value
+      floatingInput.value = ''
+      processFloatingInput(val)
+    })
+
+    floatingInput.addEventListener('keydown', e=>{
+      if(e.key === 'Enter'){
+        e.preventDefault()
+        floatingSend.click()
+      }
+    })
+
+    // Add hover effect to floating button
+    floatingBtn.addEventListener('mouseenter', ()=>{ floatingBtn.style.transform = 'scale(1.1)'; floatingBtn.style.boxShadow = '0 6px 30px rgba(124,58,237,0.6)' })
+    floatingBtn.addEventListener('mouseleave', ()=>{ floatingBtn.style.transform = 'scale(1)'; floatingBtn.style.boxShadow = '0 4px 20px rgba(124,58,237,0.4)' })
+
     // --- Tab bar: switch visible panels to avoid long scrolling ---
     function showTab(name){
       const toShow = {
         principal: ['.controls','#table','.actions'],
         basic: ['#basicCard'],
+        guia: ['#guiaCard'],
         original: ['#originalPanel'],
         gastos: ['#gastosSection'],
         agente: ['#agentPanel']
       }[name] || ['.controls','#table','.actions']
       // All candidate selectors we may hide/show
-      const allSelectors = ['.controls','#table','.actions','#basicCard','#originalPanel','#gastosSection','#agentPanel']
+      const allSelectors = ['.controls','#table','.actions','#basicCard','#guiaCard','#originalPanel','#gastosSection','#agentPanel']
       allSelectors.forEach(sel=>{
         document.querySelectorAll(sel).forEach(el=>{ el.style.display = 'none' })
       })
