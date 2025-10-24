@@ -5,26 +5,65 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Plazas Garaje — Análisis interactivo</title>
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;max-width:1100px;margin:24px auto;padding:0 16px}
-    table{width:100%;border-collapse:collapse;margin-top:12px}
-    th,td{border:1px solid #ddd;padding:8px;text-align:left}
-    th{background:#f6f8fa;cursor:pointer}
-    tr.selected{background:#e6ffed}
+    :root{
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --muted:#6b7280;
+      --accent:#0366d6;
+      --success:#0a8a3a;
+      --danger:#d64545;
+    }
+    html,body{height:100%;margin:0}
+    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;max-width:1200px;margin:18px auto;padding:0 16px;background:var(--bg);color:#111}
+    header.appbar{display:flex;align-items:center;gap:12px;padding:16px;border-radius:10px;background:linear-gradient(90deg, #ffffff, #f6f9ff);box-shadow:0 6px 18px rgba(20,30,60,0.06);margin-bottom:18px}
+    header.appbar h1{margin:0;font-size:1.2rem}
+    .container{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(20,30,60,0.03)}
     .controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-    .badge{display:inline-block;padding:2px 8px;background:#eef; border-radius:6px}
+    .controls label, .controls select, .controls input {font-size:0.95rem}
+    .badge{display:inline-block;padding:4px 10px;background:#f0f6ff;color:#023e8a;border-radius:999px;font-weight:600}
     .actions{margin-top:12px}
-    .hint{color:#666;font-size:0.9rem}
-    button{padding:6px 10px}
-    th .sort-arrow{margin-left:6px;font-size:0.8em;opacity:0.6}
-    th.sorted{background:#fff4c2}
+    .hint{color:var(--muted);font-size:0.95rem}
+    button{padding:8px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:#fff;cursor:pointer}
+    button.primary{background:var(--accent);color:#fff;border:none}
+    button.positive{background:var(--success);color:#fff;border:none}
+    button.danger{background:var(--danger);color:#fff;border:none}
+    table{width:100%;border-collapse:collapse;margin-top:12px;border-radius:6px;overflow:hidden;box-shadow:0 4px 12px rgba(20,30,60,0.04)}
+    th,td{padding:10px 12px;text-align:left}
+    thead th{background:#fbfdff;border-bottom:1px solid #eef3ff}
+    tbody tr:nth-child(even){background:#fbfbfd}
+    tr.selected{background:linear-gradient(90deg,#f0fff4,#e9fff0)}
     tr.sold td{opacity:0.5;text-decoration:line-through}
+    .meta{color:var(--muted);font-size:0.9rem}
+    .controls-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+    @media (max-width:800px){
+      .controls{flex-direction:column;align-items:stretch}
+      header.appbar{flex-direction:column;align-items:flex-start}
+    }
+    /* sort arrows */
+    th .sort-arrow{margin-left:6px;font-size:0.8em;opacity:0.6;display:inline-flex;flex-direction:column;line-height:0.8}
+    th .sort-arrow .arrow{font-size:0.8em;opacity:0.35;padding:0 4px;cursor:pointer;display:inline-block}
+    th.sorted .sort-arrow .arrow{opacity:0.9}
+    th.sorted.asc .sort-arrow .arrow.asc{font-weight:700}
+    th.sorted.desc .sort-arrow .arrow.desc{font-weight:700}
   </style>
+    <style>
+      /* compact action buttons */
+      td button{border-radius:6px;padding:6px 8px;margin-right:6px;font-size:0.95rem}
+      td button.fav{background:transparent;border:1px solid #eee}
+      td button.note{background:#fff9f1;border:1px solid #ffedd5}
+      td button.sold{background:#fff;border:1px solid #eee}
+    </style>
 </head>
 <body>
-  <h1>Plazas de Garaje — Análisis interactivo</h1>
-  <p class="hint">Selecciona hasta 3 plazas para crear un lote. Usa el control de ordenación o haz clic en el encabezado de la tabla. Pulsa "Compartir vista" para obtener una URL con selección/orden.</p>
+  <header class="appbar">
+    <h1>Plazas de Garaje — Análisis interactivo</h1>
+    <div class="meta">Interactivo — selecciona, filtra y comparte</div>
+  </header>
 
-  <div class="controls">
+  <div class="container">
+    <p class="hint">Selecciona hasta 3 plazas para crear un lote. Usa el control de ordenación o haz clic en el encabezado de la tabla. Pulsa "Compartir vista" para obtener una URL con selección/orden.</p>
+
+    <div class="controls">
     <label>Ordenar por:
       <select id="sortField">
         <option value="metros">Metros</option>
@@ -40,13 +79,15 @@
       </select>
     </label>
 
-  <button id="recommend">Recomendar mejor lote</button>
+    <button id="recommend" class="primary">Recomendar mejor lote</button>
   <label>N: <input id="recommendN" type="number" min="1" value="3" style="width:60px"></label>
   <label style="margin-left:8px"><input type="checkbox" id="hideSold"> Ocultar vendidas</label>
-    <button id="share">Compartir vista</button>
-    <button id="exportCsv">Exportar CSV</button>
-    <button id="exportSel">Exportar selección (JSON)</button>
-    <button id="importSel">Importar selección (JSON)</button>
+    <div class="controls-right">
+      <button id="share">Compartir vista</button>
+      <button id="exportCsv">Exportar CSV</button>
+      <button id="exportSel">Exportar selección (JSON)</button>
+      <button id="importSel">Importar selección (JSON)</button>
+    </div>
     <input type="file" id="importFile" accept="application/json" style="display:none">
     <div style="margin-left:auto">
       <span class="badge" id="selectedCount">Seleccionadas: 0</span>
@@ -63,12 +104,12 @@
   </div>
 
   <!-- Chat-like agent panel -->
-  <section id="agentPanel" style="margin-top:18px;border:1px solid #ddd;padding:12px;border-radius:8px;background:#fbfbfc">
+  <section id="agentPanel" style="margin-top:18px;border:1px solid #e6eefb;padding:12px;border-radius:8px;background:#fbfcff">
     <h2 style="margin:0 0 8px 0">Agente "APACAAQUITUCOCHE" — Pregúntame por una plaza</h2>
-    <div id="chat" style="height:220px;overflow:auto;border:1px solid #eee;padding:8px;background:#fff;border-radius:6px"></div>
+    <div id="chat" style="height:220px;overflow:auto;border:1px solid #eef3ff;padding:10px;background:#fff;border-radius:8px"></div>
     <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
-      <input id="agentInput" placeholder="Escribe: 'plaza 401' o 'APACAAQUITUCOCHE marcar 401 favorito'" style="flex:1;padding:8px">
-      <button id="agentSend">Enviar</button>
+      <input id="agentInput" placeholder="Escribe: 'plaza 401' o 'APACAAQUITUCOCHE marcar 401 favorito'" style="flex:1;padding:10px;border-radius:8px;border:1px solid #e6eefb">
+      <button id="agentSend" class="primary">Enviar</button>
       <button id="agentClear">Limpiar</button>
     </div>
   </section>
@@ -83,13 +124,16 @@
     <thead>
       <tr>
         <th></th>
-        <th data-key="ur">UR/REGISTRAL <span class="sort-arrow"></span></th>
-        <th data-key="plaza">Nº PLAZA <span class="sort-arrow"></span></th>
-        <th data-key="precio">PRECIO <span class="sort-arrow"></span></th>
-        <th data-key="ubicacion">UBICACIÓN <span class="sort-arrow"></span></th>
-        <th data-key="metros">METROS <span class="sort-arrow"></span></th>
-        <th data-key="estimado">Estimado (€) <span class="sort-arrow"></span></th>
-        <th data-key="ahorro">Ahorro (€) <span class="sort-arrow"></span></th>
+  <th data-key="ur">UR/REGISTRAL <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
+  <th data-key="plaza">Nº PLAZA <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
+  <th data-key="precio">PRECIO <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
+  <th data-key="itp">ITP (8%) <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
+  <th data-key="ubicacion">UBICACIÓN <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
+  <th data-key="metros">METROS <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
+  <th data-key="estimado">Estimado (€) <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
+  <th data-key="ahorro">Ahorro (€) <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
+  <th data-key="gastos_min">Gastos mín (€) <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
+  <th data-key="gastos_max">Gastos máx (€) <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
         <th>Acciones</th>
       </tr>
       <tr id="filtersRow">
@@ -97,6 +141,7 @@
         <th><input data-filter="ur" style="width:100%" placeholder="filtrar"></th>
         <th><input data-filter="plaza" style="width:100%" placeholder="filtrar"></th>
         <th><input data-filter="precio" style="width:100%" placeholder="filtrar"></th>
+        <th><input data-filter="itp" style="width:100%" placeholder="filtrar"></th>
         <th><input data-filter="ubicacion" style="width:100%" placeholder="filtrar"></th>
         <th><input data-filter="metros" style="width:100%" placeholder="filtrar"></th>
         <th></th>
@@ -131,14 +176,17 @@
           <td>${p.ur}</td>
           <td>${p.plaza} ${notes[p.plaza]? '<div style="font-size:0.8rem;color:#666">' + (notes[p.plaza].slice(0,60)) + (notes[p.plaza].length>60? '…':'' ) + '</div>':''}</td>
           <td>${p.precio_str}</td>
+          <td>${fmtMoney(p.precio * 0.08)}</td>
           <td>${p.ubicacion}</td>
           <td>${p.metros}</td>
           <td>${fmtMoney(p.estimado)}</td>
           <td style="color:${ahorro>=0? '#0a0' : '#d00'}">${fmtMoney(ahorro)}</td>
-          <td>
-            <button class="fav" data-plaza="${p.plaza}">${isFav? '★' : '☆'} Favorito</button>
-            <button class="note" data-plaza="${p.plaza}">Notas</button>
-            <button class="sold" data-plaza="${p.plaza}">${isSold? 'VENDIDA' : 'Marcar vendida'}</button>
+          <td>${fmtMoney((p.precio * 0.08) + 400 + 100)}</td>
+          <td>${fmtMoney((p.precio * 0.08) + 600 + 150)}</td>
+          <td style="white-space:nowrap">
+            <button class="fav" data-plaza="${p.plaza}" title="Favorito">${isFav? '★' : '☆'}</button>
+            <button class="note" data-plaza="${p.plaza}" title="Notas">📝</button>
+            <button class="sold" data-plaza="${p.plaza}" title="Marcar vendida">${isSold? '🚫' : '✔'}</button>
           </td>
         `
         if(isSold) tr.classList.add('sold')
@@ -198,7 +246,8 @@
       document.querySelectorAll('#table tbody tr').forEach(tr=>{
         let visible = true
         const cells = tr.querySelectorAll('td')
-        const m = { ur:1, plaza:2, precio:3, ubicacion:4, metros:5 }
+        // updated column indexes after adding ITP column
+        const m = { ur:1, plaza:2, precio:3, itp:4, ubicacion:5, metros:6 }
         for(const k in filters){
           const idx = m[k]
           if(idx===undefined) continue
@@ -237,6 +286,9 @@
       plazas.sort((a,b)=>{
         let va, vb
         if(field==='ahorro'){ va = (a.estimado - a.precio); vb = (b.estimado - b.precio) }
+  else if(field==='itp'){ va = a.precio * 0.08; vb = b.precio * 0.08 }
+  else if(field==='gastos_min'){ va = (a.precio * 0.08) + 400 + 100; vb = (b.precio * 0.08) + 400 + 100 }
+  else if(field==='gastos_max'){ va = (a.precio * 0.08) + 600 + 150; vb = (b.precio * 0.08) + 600 + 150 }
         else { va = a[field]; vb = b[field] }
         if(va < vb) return order==='asc'? -1 : 1
         if(va > vb) return order==='asc'? 1 : -1
@@ -265,10 +317,13 @@
     }
 
     function exportCsv(){
-      const rows = [['UR/REGISTRAL','Nº PLAZA','PRECIO','UBICACIÓN','METROS','Estimado','Ahorro']]
+      const rows = [['UR/REGISTRAL','Nº PLAZA','PRECIO','ITP(8%)','UBICACIÓN','METROS','Estimado','Ahorro','Gastos mín','Gastos máx']]
       plazas.forEach(p=>{
         const ahorro = (p.estimado - p.precio).toFixed(2)
-        rows.push([p.ur,p.plaza,p.precio_str,p.ubicacion,p.metros,p.estimado.toFixed(2),ahorro])
+        const itp = (p.precio * 0.08).toFixed(2)
+        const gmin = ((p.precio * 0.08) + 400 + 100).toFixed(2)
+        const gmax = ((p.precio * 0.08) + 600 + 150).toFixed(2)
+        rows.push([p.ur,p.plaza,p.precio_str,itp,p.ubicacion,p.metros,p.estimado.toFixed(2),ahorro,gmin,gmax])
       })
       const csv = rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n')
       const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'}), url = URL.createObjectURL(blob)
@@ -331,33 +386,49 @@
     }
 
     // Header click sorting: toggle sort on any th[data-key]
-    function clearHeaderArrows(){
-      document.querySelectorAll('th[data-key] .sort-arrow').forEach(s=>s.textContent='')
+    function clearHeaderSortClasses(){
+      document.querySelectorAll('th[data-key]').forEach(t=>{ t.classList.remove('sorted','asc','desc') })
+      // reset arrow emphasis
+      document.querySelectorAll('th[data-key] .sort-arrow .arrow').forEach(a=>a.style.opacity='0.35')
     }
+
     function setHeaderArrow(key,order){
-      clearHeaderArrows()
-      document.querySelectorAll('th[data-key]').forEach(t=>t.classList.remove('sorted'))
+      clearHeaderSortClasses()
       const th = document.querySelector('th[data-key="'+key+'"]')
       if(!th) return
       th.classList.add('sorted')
-      const arrow = th.querySelector('.sort-arrow')
-      arrow.textContent = order === 'asc' ? '▲' : '▼'
+      th.classList.add(order === 'asc' ? 'asc' : 'desc')
+      // highlight arrows
+      const ascEl = th.querySelector('.sort-arrow .arrow.asc')
+      const descEl = th.querySelector('.sort-arrow .arrow.desc')
+      if(ascEl) ascEl.style.opacity = order === 'asc' ? '0.95' : '0.35'
+      if(descEl) descEl.style.opacity = order === 'desc' ? '0.95' : '0.35'
+      // sync selects
+      document.getElementById('sortField').value = key
+      document.getElementById('sortOrder').value = order
       // persist last sort
       localStorage.setItem('plazas_last_sort', JSON.stringify({field:key,order:order}))
     }
+
+    // header click toggles order
     document.querySelectorAll('th[data-key]').forEach(th=>{
-      th.addEventListener('click', ()=>{
+      th.addEventListener('click', (ev)=>{
+        // if clicked on explicit arrow, that will be handled separately
         const key = th.dataset.key
-        let currentField = document.getElementById('sortField').value
-        let currentOrder = document.getElementById('sortOrder').value
+        const last = JSON.parse(localStorage.getItem('plazas_last_sort')||'null') || {}
+        let currentField = last.field || document.getElementById('sortField').value
+        let currentOrder = last.order || document.getElementById('sortOrder').value
         if(currentField === key) currentOrder = currentOrder === 'asc' ? 'desc' : 'asc'
         else currentOrder = 'desc'
-        document.getElementById('sortField').value = key
-        document.getElementById('sortOrder').value = currentOrder
         setHeaderArrow(key,currentOrder)
         sortBy(key,currentOrder)
         updateUrlState()
       })
+      // arrows inside header: clicking a specific arrow sets that order explicitly
+      const ascEl = th.querySelector('.sort-arrow .arrow.asc')
+      const descEl = th.querySelector('.sort-arrow .arrow.desc')
+      if(ascEl){ ascEl.addEventListener('click', (e)=>{ e.stopPropagation(); const key = th.dataset.key; setHeaderArrow(key,'asc'); sortBy(key,'asc'); updateUrlState() }) }
+      if(descEl){ descEl.addEventListener('click', (e)=>{ e.stopPropagation(); const key = th.dataset.key; setHeaderArrow(key,'desc'); sortBy(key,'desc'); updateUrlState() }) }
     })
 
     function updateUrlState(){
@@ -410,6 +481,17 @@
       out += `<div>Precio: <strong>${p.precio_str}</strong> — Estimado: <strong>${fmtMoney(p.estimado)}</strong> — Ahorro: <strong style="color:${ahorro>=0? '#0a0':'#d00'}">${fmtMoney(ahorro)}</strong></div>`
       if(p.metros) out += `<div>Precio/m²: ${por_m2 ? fmtMoney(por_m2) : 'N/D'} — Estimado/m²: ${por_m2_estim ? fmtMoney(por_m2_estim) : 'N/D'}</div>`
       out += `<div>Sótano: <strong>${sotano}</strong></div>`
+    // cost breakdown (approx)
+    const itp = p.precio * 0.08
+    const notMin = 400, notMax = 600
+    const gestMin = 100, gestMax = 150
+    const totalMin = itp + notMin + gestMin
+    const totalMax = itp + notMax + gestMax
+  out += `<div style="margin-top:8px"><strong>Gastos aproximados (compra 2ª mano):</strong></div>`
+  out += `<div class="meta">💸 <span title="Impuesto de Transmisiones Patrimoniales (8%)">ITP (8%):</span> <strong>${fmtMoney(itp)}</strong></div>`
+  out += `<div class="meta">📜 <span title="Gastos de notaría y registro estimados">Notaría + registro:</span> <strong>${fmtMoney(notMin)} – ${fmtMoney(notMax)}</strong></div>`
+  out += `<div class="meta">🧾 <span title="Gestoría: tramitación administrativa (opcional)">Gestoría (opcional):</span> <strong>${fmtMoney(gestMin)} – ${fmtMoney(gestMax)}</strong></div>`
+  out += `<div style="margin-top:6px">🔢 <strong>Total aproximado:</strong> ${fmtMoney(totalMin)} – ${fmtMoney(totalMax)}</div>`
       // actions
       out += `<div style="margin-top:6px"><button data-action="fav" data-plaza="${p.plaza}">Marcar favorito</button> <button data-action="sold" data-plaza="${p.plaza}">Marcar vendida</button></div>`
       return out
@@ -503,5 +585,6 @@
     document.getElementById('agentClear').addEventListener('click', ()=>{ document.getElementById('chat').innerHTML = '' })
 
   </script>
+  </div>
 </body>
 </html>
