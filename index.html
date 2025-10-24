@@ -487,7 +487,8 @@
             const sold = JSON.parse(localStorage.getItem('plazas_sold')||'{}')
             sold[id] = true
             localStorage.setItem('plazas_sold', JSON.stringify(sold))
-            render(); appendChat('Gatito', `Plaza ${id} marcada como VENDIDA.`)
+            render();
+            appendChat('Gatito', `Plaza ${id} marcada como VENDIDA.`);
           }
         })
       })
