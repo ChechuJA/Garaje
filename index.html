@@ -426,7 +426,7 @@
       if(special){
         const cmd = special[1].trim()
         // e.g. 'marcar 401 favorito' or 'marcar 401 vendida'
-        const m = cmd.match(/marcar\s*(\d+)\s*(favorito|vendida|vendido|vendido|vende)/i)
+        const m = cmd.match(/marcar\s*(\d+)\s*(favorito|vendida|vendido|vende)/i)
         if(m){
           const id = Number(m[1])
           const what = m[2].toLowerCase()
