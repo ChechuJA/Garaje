@@ -15,7 +15,11 @@
     .actions{margin-top:12px}
     .hint{color:#666;font-size:0.9rem}
     button{padding:6px 10px}
-    th .sort-arrow{margin-left:6px;font-size:0.8em;opacity:0.6}
+  th .sort-arrow{margin-left:6px;font-size:0.8em;opacity:0.6;display:inline-flex;flex-direction:column;line-height:0.8}
+  th .sort-arrow .arrow{font-size:0.8em;opacity:0.35;padding:0 2px;cursor:pointer;display:inline-block}
+  th.sorted .sort-arrow .arrow{opacity:0.9}
+  th.sorted.asc .sort-arrow .arrow.asc{font-weight:700}
+  th.sorted.desc .sort-arrow .arrow.desc{font-weight:700}
     th.sorted{background:#fff4c2}
     tr.sold td{opacity:0.5;text-decoration:line-through}
   </style>
@@ -83,13 +87,13 @@
     <thead>
       <tr>
         <th></th>
-        <th data-key="ur">UR/REGISTRAL <span class="sort-arrow"></span></th>
-        <th data-key="plaza">Nº PLAZA <span class="sort-arrow"></span></th>
-        <th data-key="precio">PRECIO <span class="sort-arrow"></span></th>
-        <th data-key="ubicacion">UBICACIÓN <span class="sort-arrow"></span></th>
-        <th data-key="metros">METROS <span class="sort-arrow"></span></th>
-        <th data-key="estimado">Estimado (€) <span class="sort-arrow"></span></th>
-        <th data-key="ahorro">Ahorro (€) <span class="sort-arrow"></span></th>
+  <th data-key="ur">UR/REGISTRAL <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
+  <th data-key="plaza">Nº PLAZA <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
+  <th data-key="precio">PRECIO <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
+  <th data-key="ubicacion">UBICACIÓN <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
+  <th data-key="metros">METROS <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
+  <th data-key="estimado">Estimado (€) <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
+  <th data-key="ahorro">Ahorro (€) <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
         <th>Acciones</th>
       </tr>
       <tr id="filtersRow">
@@ -331,33 +335,49 @@
     }
 
     // Header click sorting: toggle sort on any th[data-key]
-    function clearHeaderArrows(){
-      document.querySelectorAll('th[data-key] .sort-arrow').forEach(s=>s.textContent='')
+    function clearHeaderSortClasses(){
+      document.querySelectorAll('th[data-key]').forEach(t=>{ t.classList.remove('sorted','asc','desc') })
+      // reset arrow emphasis
+      document.querySelectorAll('th[data-key] .sort-arrow .arrow').forEach(a=>a.style.opacity='0.35')
     }
+
     function setHeaderArrow(key,order){
-      clearHeaderArrows()
-      document.querySelectorAll('th[data-key]').forEach(t=>t.classList.remove('sorted'))
+      clearHeaderSortClasses()
       const th = document.querySelector('th[data-key="'+key+'"]')
       if(!th) return
       th.classList.add('sorted')
-      const arrow = th.querySelector('.sort-arrow')
-      arrow.textContent = order === 'asc' ? '▲' : '▼'
+      th.classList.add(order === 'asc' ? 'asc' : 'desc')
+      // highlight arrows
+      const ascEl = th.querySelector('.sort-arrow .arrow.asc')
+      const descEl = th.querySelector('.sort-arrow .arrow.desc')
+      if(ascEl) ascEl.style.opacity = order === 'asc' ? '0.95' : '0.35'
+      if(descEl) descEl.style.opacity = order === 'desc' ? '0.95' : '0.35'
+      // sync selects
+      document.getElementById('sortField').value = key
+      document.getElementById('sortOrder').value = order
       // persist last sort
       localStorage.setItem('plazas_last_sort', JSON.stringify({field:key,order:order}))
     }
+
+    // header click toggles order
     document.querySelectorAll('th[data-key]').forEach(th=>{
-      th.addEventListener('click', ()=>{
+      th.addEventListener('click', (ev)=>{
+        // if clicked on explicit arrow, that will be handled separately
         const key = th.dataset.key
-        let currentField = document.getElementById('sortField').value
-        let currentOrder = document.getElementById('sortOrder').value
+        const last = JSON.parse(localStorage.getItem('plazas_last_sort')||'null') || {}
+        let currentField = last.field || document.getElementById('sortField').value
+        let currentOrder = last.order || document.getElementById('sortOrder').value
         if(currentField === key) currentOrder = currentOrder === 'asc' ? 'desc' : 'asc'
         else currentOrder = 'desc'
-        document.getElementById('sortField').value = key
-        document.getElementById('sortOrder').value = currentOrder
         setHeaderArrow(key,currentOrder)
         sortBy(key,currentOrder)
         updateUrlState()
       })
+      // arrows inside header: clicking a specific arrow sets that order explicitly
+      const ascEl = th.querySelector('.sort-arrow .arrow.asc')
+      const descEl = th.querySelector('.sort-arrow .arrow.desc')
+      if(ascEl){ ascEl.addEventListener('click', (e)=>{ e.stopPropagation(); const key = th.dataset.key; setHeaderArrow(key,'asc'); sortBy(key,'asc'); updateUrlState() }) }
+      if(descEl){ descEl.addEventListener('click', (e)=>{ e.stopPropagation(); const key = th.dataset.key; setHeaderArrow(key,'desc'); sortBy(key,'desc'); updateUrlState() }) }
     })
 
     function updateUrlState(){
