@@ -481,7 +481,8 @@
             const favs = JSON.parse(localStorage.getItem('plazas_favs')||'{}')
             favs[id] = true
             localStorage.setItem('plazas_favs', JSON.stringify(favs))
-            render(); appendChat('Gatito', `Plaza ${id} marcada como favorito.`)
+            render();
+            appendChat('Gatito', `Plaza ${id} marcada como favorito.`)
           } else if(a === 'sold'){
             const sold = JSON.parse(localStorage.getItem('plazas_sold')||'{}')
             sold[id] = true
