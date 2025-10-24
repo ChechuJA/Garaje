@@ -472,7 +472,8 @@
 
     function attachAgentButtons(){
       document.querySelectorAll('#chat button[data-action]').forEach(b=>{
-        if(b.dataset.bound) return b.dataset.bound = '1'
+        if(b.dataset.bound) return;
+        b.dataset.bound = '1';
         b.addEventListener('click', e=>{
           const a = b.dataset.action
           const id = Number(b.dataset.plaza)
