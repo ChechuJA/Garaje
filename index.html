@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Plazas Garaje — Análisis interactivo</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;max-width:1100px;margin:24px auto;padding:0 16px}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left}
+    th{background:#f6f8fa;cursor:pointer}
+    tr.selected{background:#e6ffed}
+    .controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .badge{display:inline-block;padding:2px 8px;background:#eef; border-radius:6px}
+    .actions{margin-top:12px}
+    .hint{color:#666;font-size:0.9rem}
+    button{padding:6px 10px}
+  </style>
+</head>
+<body>
+  <h1>Plazas de Garaje — Análisis interactivo</h1>
+  <p class="hint">Selecciona hasta 3 plazas para crear un lote. Usa el control de ordenación o haz clic en el encabezado de la tabla. Pulsa "Compartir vista" para obtener una URL con selección/orden.</p>
+
+  <div class="controls">
+    <label>Ordenar por:
+      <select id="sortField">
+        <option value="metros">Metros</option>
+        <option value="precio">Precio</option>
+        <option value="ahorro">Ahorro (estimado - precio)</option>
+      </select>
+    </label>
+
+    <label>Orden:
+      <select id="sortOrder">
+        <option value="desc">Descendente</option>
+        <option value="asc">Ascendente</option>
+      </select>
+    </label>
+
+    <button id="recommend">Recomendar mejor lote de 3</button>
+    <button id="share">Compartir vista</button>
+    <button id="exportCsv">Exportar CSV</button>
+    <button id="exportSel">Exportar selección (JSON)</button>
+    <button id="importSel">Importar selección (JSON)</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none">
+    <div style="margin-left:auto">
+      <span class="badge" id="selectedCount">Seleccionadas: 0</span>
+    </div>
+  </div>
+
+  <div style="margin-top:12px">
+    <label>Buscar plaza por número: <input id="searchPlaza" type="number" min="1" placeholder="Ej: 320" style="width:100px"></label>
+    <button id="btnSearch">Buscar</button>
+    <button id="btnAddToLot">Añadir al lote</button>
+    <span id="searchResult" style="margin-left:12px;color:#222"></span>
+  </div>
+
+  <div class="actions">
+    <strong>Seleccionadas (máx 3):</strong>
+    <span id="selectedList">—</span>
+    <button id="clear">Limpiar selección</button>
+  </div>
+
+  <table id="table">
+    <thead>
+      <tr>
+        <th></th>
+        <th data-key="ur">UR/REGISTRAL</th>
+        <th data-key="plaza">Nº PLAZA</th>
+        <th data-key="precio">PRECIO</th>
+        <th data-key="ubicacion">UBICACIÓN</th>
+        <th data-key="metros">METROS</th>
+        <th data-key="estimado">Estimado (€)</th>
+        <th data-key="ahorro">Ahorro (€)</th>
+            <th>Acciones</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    const DATA_URL = './plazas.json'
+    let plazas = []
+    let selected = new Set()
+
+    function fmtMoney(n){ return n.toLocaleString('es-ES',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' €' }
+
+    function render(){
+      const tbody = document.querySelector('#table tbody')
+      tbody.innerHTML = ''
+      plazas.forEach(p=>{
+        const tr = document.createElement('tr')
+        if(selected.has(p.plaza)) tr.classList.add('selected')
+        const ahorro = +(p.estimado - p.precio)
+        const favs = JSON.parse(localStorage.getItem('plazas_favs')||'{}')
+        const notes = JSON.parse(localStorage.getItem('plazas_notes')||'{}')
+        const isFav = !!favs[p.plaza]
+        tr.innerHTML = `
+          <td><input type="checkbox" data-plaza="${p.plaza}" ${selected.has(p.plaza)?'checked':''}></td>
+          <td>${p.ur}</td>
+          <td>${p.plaza} ${notes[p.plaza]? '<div style="font-size:0.8rem;color:#666">' + (notes[p.plaza].slice(0,60)) + (notes[p.plaza].length>60? '…':'' ) + '</div>':''}</td>
+          <td>${p.precio_str}</td>
+          <td>${p.ubicacion}</td>
+          <td>${p.metros}</td>
+          <td>${fmtMoney(p.estimado)}</td>
+          <td style="color:${ahorro>=0? '#0a0' : '#d00'}">${fmtMoney(ahorro)}</td>
+          <td>
+            <button class="fav" data-plaza="${p.plaza}">${isFav? '★' : '☆'} Favorito</button>
+            <button class="note" data-plaza="${p.plaza}">Notas</button>
+          </td>
+        `
+        tbody.appendChild(tr)
+      })
+      attachCheckboxHandlers()
+      updateSelectedUI()
+      attachActionHandlers()
+    }
+
+    function attachActionHandlers(){
+      document.querySelectorAll('button.fav').forEach(btn=>{
+        btn.onclick = ()=>{
+          const id = btn.dataset.plaza
+          const favs = JSON.parse(localStorage.getItem('plazas_favs')||'{}')
+          if(favs[id]) delete favs[id]
+          else favs[id] = true
+          localStorage.setItem('plazas_favs', JSON.stringify(favs))
+          render()
+        }
+      })
+      document.querySelectorAll('button.note').forEach(btn=>{
+        btn.onclick = ()=>{
+          const id = btn.dataset.plaza
+          const notes = JSON.parse(localStorage.getItem('plazas_notes')||'{}')
+          const current = notes[id] || ''
+          const v = prompt('Notas para la plaza ' + id, current)
+          if(v === null) return
+          if(v === '') { delete notes[id] }
+          else notes[id] = v
+          localStorage.setItem('plazas_notes', JSON.stringify(notes))
+          render()
+        }
+      })
+    }
+
+    function attachCheckboxHandlers(){
+      document.querySelectorAll('input[type=checkbox][data-plaza]').forEach(cb=>{
+        cb.onchange = e=>{
+          const n = Number(cb.dataset.plaza)
+          if(cb.checked) selected.add(n)
+          else selected.delete(n)
+          // persist selection
+          localStorage.setItem('plazas_selected', JSON.stringify(Array.from(selected)))
+          updateSelectedUI()
+        }
+      })
+    }
+
+    function updateSelectedUI(){
+      document.getElementById('selectedCount').textContent = 'Seleccionadas: ' + selected.size
+      const listSpan = document.getElementById('selectedList')
+      if(selected.size===0) listSpan.textContent = '—'
+      else listSpan.textContent = Array.from(selected).join(', ')
+    }
+
+    function sortBy(field,order){
+      plazas.sort((a,b)=>{
+        let va, vb
+        if(field==='ahorro'){ va = (a.estimado - a.precio); vb = (b.estimado - b.precio) }
+        else { va = a[field]; vb = b[field] }
+        if(va < vb) return order==='asc'? -1 : 1
+        if(va > vb) return order==='asc'? 1 : -1
+        return 0
+      })
+      render()
+    }
+
+    function applyUrlParams(){
+      const params = new URLSearchParams(window.location.search)
+      const s = params.get('sort')
+      const o = params.get('order')
+      const sel = params.get('selected')
+      if(s) document.getElementById('sortField').value = s
+      if(o) document.getElementById('sortOrder').value = o
+      if(sel){ sel.split(',').map(x=>Number(x)).forEach(n=>{ if(!isNaN(n)) selected.add(n) }) }
+    }
+
+    function shareUrl(){
+      const params = new URLSearchParams()
+      params.set('sort', document.getElementById('sortField').value)
+      params.set('order', document.getElementById('sortOrder').value)
+      if(selected.size>0) params.set('selected', Array.from(selected).join(','))
+      const url = location.origin + location.pathname + '?' + params.toString()
+      navigator.clipboard?.writeText(url).then(()=>alert('URL copiada al portapapeles:\n'+url)).catch(()=>prompt('Copia esta URL:', url))
+    }
+
+    function exportCsv(){
+      const rows = [['UR/REGISTRAL','Nº PLAZA','PRECIO','UBICACIÓN','METROS','Estimado','Ahorro']]
+      plazas.forEach(p=>{
+        const ahorro = (p.estimado - p.precio).toFixed(2)
+        rows.push([p.ur,p.plaza,p.precio_str,p.ubicacion,p.metros,p.estimado.toFixed(2),ahorro])
+      })
+      const csv = rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n')
+      const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'}), url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href = url; a.download = 'plazas-estimaciones.csv'; a.click(); URL.revokeObjectURL(url)
+    }
+
+    // Events
+    document.getElementById('sortField').onchange = ()=>{ sortBy(document.getElementById('sortField').value, document.getElementById('sortOrder').value); updateUrlState() }
+    document.getElementById('sortOrder').onchange = ()=>{ sortBy(document.getElementById('sortField').value, document.getElementById('sortOrder').value); updateUrlState() }
+    document.getElementById('recommend').onclick = ()=>{
+      // seleccionar top 3 por ahorro (estimado - precio) desc
+      plazas.sort((a,b)=> (b.estimado - b.precio) - (a.estimado - a.precio))
+      selected = new Set(plazas.slice(0,3).map(p=>p.plaza))
+      localStorage.setItem('plazas_selected', JSON.stringify(Array.from(selected)))
+      render(); updateUrlState()
+    }
+    document.getElementById('share').onclick = shareUrl
+    document.getElementById('clear').onclick = ()=>{ selected.clear(); render(); updateUrlState() }
+    document.getElementById('exportCsv').onclick = exportCsv
+    document.getElementById('exportSel').onclick = ()=>{
+      const data = JSON.stringify(Array.from(selected))
+      const blob = new Blob([data],{type:'application/json'}); const url = URL.createObjectURL(blob)
+      const a = document.createElement('a'); a.href = url; a.download = 'seleccion-plazas.json'; a.click(); URL.revokeObjectURL(url)
+    }
+    document.getElementById('importSel').onclick = ()=> document.getElementById('importFile').click()
+    document.getElementById('importFile').onchange = (e)=>{
+      const f = e.target.files[0]; if(!f) return; const reader = new FileReader(); reader.onload = ()=>{
+        try{ const arr = JSON.parse(reader.result); if(Array.isArray(arr)){ selected = new Set(arr.map(Number)); localStorage.setItem('plazas_selected', JSON.stringify(Array.from(selected))); render(); updateUrlState() } else alert('JSON inválido') }
+        catch(err){ alert('Error leyendo JSON: '+err.message) }
+      }; reader.readAsText(f)
+    }
+    document.getElementById('btnSearch').onclick = ()=>{
+      const v = Number(document.getElementById('searchPlaza').value)
+      if(!v) { alert('Introduce un número de plaza válido'); return }
+      const r = lookupPlaza(v)
+      const target = document.getElementById('searchResult')
+      if(!r) { target.textContent = 'Plaza no encontrada'; target.style.color = '#d00'; return }
+      target.style.color = '#060'
+      target.textContent = `Plaza ${r.plaza}: ${r.precio_str} — ${r.ubicacion} — ${r.metros} m² — Estimado: ${fmtMoney(r.estimado)} — Ahorro: ${fmtMoney(r.estimado - r.precio)}`
+    }
+    document.getElementById('btnAddToLot').onclick = ()=>{
+      const v = Number(document.getElementById('searchPlaza').value)
+      if(!v) { alert('Introduce un número de plaza válido'); return }
+      const r = lookupPlaza(v)
+      if(!r) { alert('Plaza no encontrada'); return }
+      selected.add(r.plaza)
+      localStorage.setItem('plazas_selected', JSON.stringify(Array.from(selected)))
+      render(); updateUrlState()
+    }
+
+    function lookupPlaza(n){
+      return plazas.find(p=>p.plaza === Number(n))
+    }
+
+    function updateUrlState(){
+      const params = new URLSearchParams()
+      params.set('sort', document.getElementById('sortField').value)
+      params.set('order', document.getElementById('sortOrder').value)
+      if(selected.size>0) params.set('selected', Array.from(selected).join(','))
+      const newurl = window.location.pathname + '?' + params.toString()
+      history.replaceState(null,'',newurl)
+    }
+
+    // Init
+    fetch(DATA_URL).then(r=>r.json()).then(data=>{
+      plazas = data
+      // restore selection from localStorage
+      const saved = JSON.parse(localStorage.getItem('plazas_selected')||'[]')
+      if(Array.isArray(saved)) saved.forEach(n=>selected.add(Number(n)))
+      applyUrlParams()
+      sortBy(document.getElementById('sortField').value, document.getElementById('sortOrder').value)
+    })
+  </script>
+</body>
+</html>
