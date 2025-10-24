@@ -202,7 +202,7 @@
   <!-- Chat-like agent panel (inside tabs) -->
   <section id="agentPanel" style="margin-top:18px;border:1px solid #e6eefb;padding:12px;border-radius:8px;background:#fbfcff">
     <h2 style="margin:0 0 8px 0">Agente "APACAAQUITUCOCHE" — Pregúntame por una plaza</h2>
-    <div id="chat" style="height:220px;overflow:auto;border:1px solid #eef3ff;padding:10px;background:#fff;border-radius:8px"></div>
+    <div id="chat" style="height:220px;overflow:auto;border:1px solid #eef3ff;padding:10px;background:#fff;border-radius:8px;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y"></div>
     <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
       <input id="agentInput" placeholder="Escribe: 'plaza 401' o 'APACAAQUITUCOCHE marcar 401 favorito'" style="flex:1;padding:10px;border-radius:8px;border:1px solid #e6eefb">
       <button id="agentSend" class="primary">Enviar</button>
@@ -216,16 +216,16 @@
   </button>
 
   <!-- Floating chat window -->
-  <div id="floatingChatWindow" style="position:fixed;bottom:90px;right:20px;width:90vw;max-width:400px;height:500px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.15);z-index:10000;display:none;flex-direction:column;overflow:hidden">
-    <div style="background:linear-gradient(90deg,#0066cc,#7c3aed);color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center">
+  <div id="floatingChatWindow" style="position:fixed;bottom:90px;right:20px;width:90vw;max-width:400px;height:500px;background:#fff;border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.15);z-index:10000;display:none;flex-direction:column;overflow:hidden;touch-action:none">
+    <div style="background:linear-gradient(90deg,#0066cc,#7c3aed);color:#fff;padding:16px;display:flex;justify-content:space-between;align-items:center;touch-action:none">
       <div style="display:flex;align-items:center;gap:8px">
         <span style="font-size:24px">🚗</span>
         <strong>Asistente Negociación</strong>
       </div>
       <button id="closeChatBtn" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center">×</button>
     </div>
-    <div id="floatingChat" style="flex:1;overflow:auto;padding:12px;background:#f9fbff"></div>
-    <div style="padding:12px;border-top:1px solid #e6eefb;background:#fff;display:flex;gap:8px">
+    <div id="floatingChat" style="flex:1;overflow:auto;padding:12px;background:#f9fbff;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y"></div>
+    <div style="padding:12px;border-top:1px solid #e6eefb;background:#fff;display:flex;gap:8px;touch-action:none">
       <input id="floatingAgentInput" placeholder="Ej: plaza 401 o calculame..." style="flex:1;padding:12px;border-radius:8px;border:1px solid #e6eefb;font-size:16px">
       <button id="floatingAgentSend" style="padding:12px 20px;border-radius:8px;background:linear-gradient(90deg,#0066cc,#7c3aed);color:#fff;border:none;cursor:pointer;font-weight:700">Enviar</button>
     </div>
@@ -968,8 +968,138 @@
         appendChat('APACAAQUITUCOCHE', out)
         return
       }
+
+      // detect help/commands request
+      if(/\b(ayuda|help|comandos?|que puedes|qué puedes)/i.test(t)){
+        let out = '<div style="margin-bottom:8px"><strong style="color:#0066cc">📚 Comandos Disponibles</strong></div>'
+        out += '<ul style="margin:8px 0;padding-left:20px;line-height:1.8">'
+        out += '<li><strong>"plaza 401"</strong> o <strong>"401"</strong> → Consulta detalles de una plaza</li>'
+        out += '<li><strong>"top"</strong> o <strong>"mejores"</strong> → TOP 10 mejores oportunidades</li>'
+        out += '<li><strong>"calculame el precio del m2 si la plaza 401 vale 9000€"</strong> → Cálculo interactivo</li>'
+        out += '<li><strong>"plazas grandes"</strong> → Plazas de más de 50 m²</li>'
+        out += '<li><strong>"plazas pequeñas"</strong> → Plazas de menos de 35 m²</li>'
+        out += '<li><strong>"precio medio"</strong> → Precio promedio del mercado</li>'
+        out += '<li><strong>"consejos"</strong> o <strong>"tips"</strong> → Tips de negociación</li>'
+        out += '<li><strong>"sotano 1"</strong>, <strong>"sotano 2"</strong> o <strong>"sotano 3"</strong> → Compara plazas por sótano</li>'
+        out += '<li><strong>"APACAAQUITUCOCHE marcar 401 favorito"</strong> → Marca favorito</li>'
+        out += '<li><strong>"APACAAQUITUCOCHE marcar 401 vendida"</strong> → Marca vendida</li>'
+        out += '</ul>'
+        appendChat('APACAAQUITUCOCHE', out)
+        return
+      }
+
+      // detect plazas grandes
+      if(/\b(plazas?\s+grandes?|más\s+grandes?|espaciosas?|grandes\s+plazas?)/i.test(t)){
+        const grandes = plazas.filter(p=>p.metros >= 50).map(p=>{
+          const oferta = ofertaFor(p)
+          const pricePerM2 = p.metros ? (p.precio / p.metros) : 999
+          const ofertaPerM2 = p.metros ? (oferta / p.metros) : 999
+          return {...p, oferta, pricePerM2, ofertaPerM2}
+        }).sort((a,b)=>b.metros - a.metros).slice(0,5)
+        
+        let out = '<div style="margin-bottom:8px"><strong style="color:#0066cc">🚗 Plazas Grandes (≥50 m²)</strong></div>'
+        out += '<ol style="margin:8px 0;padding-left:20px;line-height:1.8">'
+        grandes.forEach(p=>{
+          out += `<li><strong>Plaza ${p.plaza}</strong> — ${p.metros} m² (${p.ubicacion})<br>`
+          out += `💰 ${p.precio_str} (${fmtMoney(p.pricePerM2)}/m²) → OFERTA: ${fmtMoney(p.oferta)} (${fmtMoney(p.ofertaPerM2)}/m²)</li>`
+        })
+        out += '</ol>'
+        out += '<div class="meta" style="margin-top:8px">💡 Ideales para coches grandes o almacenamiento extra.</div>'
+        appendChat('APACAAQUITUCOCHE', out)
+        return
+      }
+
+      // detect plazas pequeñas
+      if(/\b(plazas?\s+pequeñas?|más\s+pequeñas?|compactas?|pequeñas\s+plazas?|baratas?)/i.test(t)){
+        const pequenas = plazas.filter(p=>p.metros > 0 && p.metros < 35).map(p=>{
+          const oferta = ofertaFor(p)
+          const pricePerM2 = p.metros ? (p.precio / p.metros) : 999
+          const ofertaPerM2 = p.metros ? (oferta / p.metros) : 999
+          return {...p, oferta, pricePerM2, ofertaPerM2}
+        }).sort((a,b)=>a.precio - b.precio).slice(0,5)
+        
+        let out = '<div style="margin-bottom:8px"><strong style="color:#0066cc">🚙 Plazas Pequeñas (<35 m²)</strong></div>'
+        out += '<ol style="margin:8px 0;padding-left:20px;line-height:1.8">'
+        pequenas.forEach(p=>{
+          out += `<li><strong>Plaza ${p.plaza}</strong> — ${p.metros} m² (${p.ubicacion})<br>`
+          out += `💰 ${p.precio_str} (${fmtMoney(p.pricePerM2)}/m²) → OFERTA: ${fmtMoney(p.oferta)} (${fmtMoney(p.ofertaPerM2)}/m²)</li>`
+        })
+        out += '</ol>'
+        out += '<div class="meta" style="margin-top:8px">💡 Más económicas, ideales para coches compactos.</div>'
+        appendChat('APACAAQUITUCOCHE', out)
+        return
+      }
+
+      // detect precio medio
+      if(/\b(precio\s+medio|promedio|media|precios?\s+promedio)/i.test(t)){
+        const avgPrecio = plazas.reduce((sum,p)=>sum + p.precio, 0) / plazas.length
+        const avgMetros = plazas.filter(p=>p.metros>0).reduce((sum,p)=>sum + p.metros, 0) / plazas.filter(p=>p.metros>0).length
+        const avgPrecioM2 = plazas.filter(p=>p.metros>0).reduce((sum,p)=>sum + (p.precio/p.metros), 0) / plazas.filter(p=>p.metros>0).length
+        const avgOferta = plazas.reduce((sum,p)=>sum + ofertaFor(p), 0) / plazas.length
+        
+        let out = '<div style="margin-bottom:8px"><strong style="color:#0066cc">📊 Estadísticas del Mercado</strong></div>'
+        out += '<div style="padding:10px;background:#f0f9ff;border-radius:8px;border:1px solid #d0e8ff">'
+        out += `<div>💵 <strong>Precio medio mercado:</strong> ${fmtMoney(avgPrecio)}</div>`
+        out += `<div>📏 <strong>Metros medios:</strong> ${avgMetros.toFixed(2)} m²</div>`
+        out += `<div>💰 <strong>Precio medio/m²:</strong> ${fmtMoney(avgPrecioM2)}</div>`
+        out += `<div>🎯 <strong>Oferta media recomendada:</strong> ${fmtMoney(avgOferta)}</div>`
+        out += `<div style="margin-top:8px;color:#059669">✅ <strong>Objetivo:</strong> ≤${fmtMoney(TARGET_PER_M2)}/m²</div>`
+        out += '</div>'
+        appendChat('APACAAQUITUCOCHE', out)
+        return
+      }
+
+      // detect consejos/tips de negociación
+      if(/\b(consejo|tip|estrategia|negociar|negociación|como\s+negocio)/i.test(t)){
+        let out = '<div style="margin-bottom:8px"><strong style="color:#d97706">💡 Tips de Negociación</strong></div>'
+        out += '<div style="padding:12px;background:#fff9e6;border-radius:8px;border:1px solid #fbbf24">'
+        out += '<ol style="margin:8px 0;padding-left:20px;line-height:1.9">'
+        out += '<li><strong>Objetivo principal:</strong> Reducir al menos 4.000€ del precio listado</li>'
+        out += '<li><strong>Referencia baja:</strong> Menciona plazas 300/301 (10.500€) como comparable</li>'
+        out += '<li><strong>Precio/m² objetivo:</strong> No pagar más de 218,29€/m²</li>'
+        out += '<li><strong>Argumentos:</strong> Sótano 3 debe ser más barato que S1/S2</li>'
+        out += '<li><strong>Inconsistencias:</strong> Plazas similares tienen precios muy diferentes</li>'
+        out += '<li><strong>As bajo la manga:</strong> Pago rápido/contado si aceptan tu precio</li>'
+        out += '<li><strong>Primera oferta:</strong> Empieza ~30% por debajo del precio pedido</li>'
+        out += '</ol>'
+        out += '</div>'
+        out += '<div class="meta" style="margin-top:8px">📱 Usa el comando "plaza XXX" para calcular tu oferta específica.</div>'
+        appendChat('APACAAQUITUCOCHE', out)
+        return
+      }
+
+      // detect sótano comparison
+      const sotanoMatch = t.match(/\b(sotano|sótano)\s*(\d+)/i)
+      if(sotanoMatch){
+        const sotanoNum = sotanoMatch[2]
+        const sotanoPlazas = plazas.filter(p=>(p.ubicacion||'').match(new RegExp(`sotano\\s*${sotanoNum}|sótano\\s*${sotanoNum}`,'i'))).map(p=>{
+          const oferta = ofertaFor(p)
+          const pricePerM2 = p.metros ? (p.precio / p.metros) : 999
+          const ofertaPerM2 = p.metros ? (oferta / p.metros) : 999
+          return {...p, oferta, pricePerM2, ofertaPerM2}
+        }).sort((a,b)=>a.pricePerM2 - b.pricePerM2)
+        
+        if(sotanoPlazas.length === 0){
+          appendChat('APACAAQUITUCOCHE', `No encuentro plazas en sótano ${sotanoNum}.`)
+          return
+        }
+        
+        let out = `<div style="margin-bottom:8px"><strong style="color:#0066cc">🏢 Plazas en Sótano ${sotanoNum}</strong> (${sotanoPlazas.length} plazas)</div>`
+        const avgPrice = sotanoPlazas.reduce((sum,p)=>sum + p.precio, 0) / sotanoPlazas.length
+        const avgPriceM2 = sotanoPlazas.reduce((sum,p)=>sum + p.pricePerM2, 0) / sotanoPlazas.length
+        out += `<div class="meta" style="margin-bottom:8px">📊 Precio medio: ${fmtMoney(avgPrice)} | €/m² medio: ${fmtMoney(avgPriceM2)}</div>`
+        out += '<ol style="margin:8px 0;padding-left:20px;line-height:1.8">'
+        sotanoPlazas.slice(0,8).forEach(p=>{
+          out += `<li><strong>Plaza ${p.plaza}</strong> — ${p.metros} m²<br>`
+          out += `💰 ${p.precio_str} (${fmtMoney(p.pricePerM2)}/m²) → OFERTA: ${fmtMoney(p.oferta)} (${fmtMoney(p.ofertaPerM2)}/m²)</li>`
+        })
+        out += '</ol>'
+        if(sotanoPlazas.length > 8) out += `<div class="meta">... y ${sotanoPlazas.length - 8} más</div>`
+        appendChat('APACAAQUITUCOCHE', out)
+        return
+      }
       
-      appendChat('APACAAQUITUCOCHE', 'No he entendido. Pide por ejemplo "plaza 401", "top 10" o usa "APACAAQUITUCOCHE marcar 401 favorito"')
+      appendChat('APACAAQUITUCOCHE', 'No he entendido. Escribe <strong>"ayuda"</strong> para ver todos los comandos disponibles.')
     }
 
     function attachAgentButtons(){
@@ -1151,8 +1281,136 @@
         return
       }
 
+      // detect help/commands request
+      if(/\b(ayuda|help|comandos?|que puedes|qué puedes)/i.test(t)){
+        let out = '<div style="margin-bottom:8px"><strong style="color:#0066cc">📚 Comandos Disponibles</strong></div>'
+        out += '<ul style="margin:8px 0;padding-left:20px;line-height:1.8;font-size:0.95em">'
+        out += '<li><strong>"plaza 401"</strong> o <strong>"401"</strong> → Consulta detalles</li>'
+        out += '<li><strong>"top"</strong> o <strong>"mejores"</strong> → TOP 10 oportunidades</li>'
+        out += '<li><strong>"calculame..."</strong> → Cálculo interactivo</li>'
+        out += '<li><strong>"plazas grandes"</strong> → Plazas de más de 50 m²</li>'
+        out += '<li><strong>"plazas pequeñas"</strong> → Plazas de menos de 35 m²</li>'
+        out += '<li><strong>"precio medio"</strong> → Precio promedio del mercado</li>'
+        out += '<li><strong>"consejos"</strong> o <strong>"tips"</strong> → Tips de negociación</li>'
+        out += '<li><strong>"sotano 1/2/3"</strong> → Compara plazas por sótano</li>'
+        out += '<li><strong>"APACAAQUITUCOCHE marcar 401 favorito/vendida"</strong></li>'
+        out += '</ul>'
+        appendFloatingChat('🚗 Asistente', out)
+        return
+      }
+
+      // detect plazas grandes
+      if(/\b(plazas?\s+grandes?|más\s+grandes?|espaciosas?|grandes\s+plazas?)/i.test(t)){
+        const grandes = plazas.filter(p=>p.metros >= 50).map(p=>{
+          const oferta = ofertaFor(p)
+          const pricePerM2 = p.metros ? (p.precio / p.metros) : 999
+          const ofertaPerM2 = p.metros ? (oferta / p.metros) : 999
+          return {...p, oferta, pricePerM2, ofertaPerM2}
+        }).sort((a,b)=>b.metros - a.metros).slice(0,5)
+        
+        let out = '<div style="margin-bottom:8px"><strong style="color:#0066cc">🚗 Plazas Grandes (≥50 m²)</strong></div>'
+        out += '<ol style="margin:8px 0;padding-left:20px;line-height:1.8;font-size:0.95em">'
+        grandes.forEach(p=>{
+          out += `<li><strong>Plaza ${p.plaza}</strong> — ${p.metros} m² (${p.ubicacion})<br>`
+          out += `💰 ${p.precio_str} (${fmtMoney(p.pricePerM2)}/m²)<br>OFERTA: ${fmtMoney(p.oferta)} (${fmtMoney(p.ofertaPerM2)}/m²)</li>`
+        })
+        out += '</ol>'
+        out += '<div style="font-size:0.9em;color:#666;margin-top:8px">💡 Ideales para coches grandes o almacenamiento.</div>'
+        appendFloatingChat('🚗 Asistente', out)
+        return
+      }
+
+      // detect plazas pequeñas
+      if(/\b(plazas?\s+pequeñas?|más\s+pequeñas?|compactas?|pequeñas\s+plazas?|baratas?)/i.test(t)){
+        const pequenas = plazas.filter(p=>p.metros > 0 && p.metros < 35).map(p=>{
+          const oferta = ofertaFor(p)
+          const pricePerM2 = p.metros ? (p.precio / p.metros) : 999
+          const ofertaPerM2 = p.metros ? (oferta / p.metros) : 999
+          return {...p, oferta, pricePerM2, ofertaPerM2}
+        }).sort((a,b)=>a.precio - b.precio).slice(0,5)
+        
+        let out = '<div style="margin-bottom:8px"><strong style="color:#0066cc">🚙 Plazas Pequeñas (<35 m²)</strong></div>'
+        out += '<ol style="margin:8px 0;padding-left:20px;line-height:1.8;font-size:0.95em">'
+        pequenas.forEach(p=>{
+          out += `<li><strong>Plaza ${p.plaza}</strong> — ${p.metros} m² (${p.ubicacion})<br>`
+          out += `💰 ${p.precio_str} (${fmtMoney(p.pricePerM2)}/m²)<br>OFERTA: ${fmtMoney(p.oferta)} (${fmtMoney(p.ofertaPerM2)}/m²)</li>`
+        })
+        out += '</ol>'
+        out += '<div style="font-size:0.9em;color:#666;margin-top:8px">💡 Más económicas, ideales para coches compactos.</div>'
+        appendFloatingChat('🚗 Asistente', out)
+        return
+      }
+
+      // detect precio medio
+      if(/\b(precio\s+medio|promedio|media|precios?\s+promedio)/i.test(t)){
+        const avgPrecio = plazas.reduce((sum,p)=>sum + p.precio, 0) / plazas.length
+        const avgMetros = plazas.filter(p=>p.metros>0).reduce((sum,p)=>sum + p.metros, 0) / plazas.filter(p=>p.metros>0).length
+        const avgPrecioM2 = plazas.filter(p=>p.metros>0).reduce((sum,p)=>sum + (p.precio/p.metros), 0) / plazas.filter(p=>p.metros>0).length
+        const avgOferta = plazas.reduce((sum,p)=>sum + ofertaFor(p), 0) / plazas.length
+        
+        let out = '<div style="margin-bottom:8px"><strong style="color:#0066cc">📊 Estadísticas del Mercado</strong></div>'
+        out += '<div style="padding:10px;background:#f0f9ff;border-radius:8px;border:1px solid #d0e8ff;font-size:0.95em">'
+        out += `<div>💵 <strong>Precio medio:</strong> ${fmtMoney(avgPrecio)}</div>`
+        out += `<div>📏 <strong>Metros medios:</strong> ${avgMetros.toFixed(2)} m²</div>`
+        out += `<div>💰 <strong>€/m² medio:</strong> ${fmtMoney(avgPrecioM2)}</div>`
+        out += `<div>🎯 <strong>Oferta media:</strong> ${fmtMoney(avgOferta)}</div>`
+        out += `<div style="margin-top:6px;color:#059669">✅ <strong>Objetivo:</strong> ≤${fmtMoney(TARGET_PER_M2)}/m²</div>`
+        out += '</div>'
+        appendFloatingChat('🚗 Asistente', out)
+        return
+      }
+
+      // detect consejos/tips de negociación
+      if(/\b(consejo|tip|estrategia|negociar|negociación|como\s+negocio)/i.test(t)){
+        let out = '<div style="margin-bottom:8px"><strong style="color:#d97706">💡 Tips de Negociación</strong></div>'
+        out += '<div style="padding:12px;background:#fff9e6;border-radius:8px;border:1px solid #fbbf24;font-size:0.95em">'
+        out += '<ol style="margin:8px 0;padding-left:20px;line-height:1.8">'
+        out += '<li>Reducir al menos 4.000€ del precio</li>'
+        out += '<li>Menciona plazas 300/301 (10.500€)</li>'
+        out += '<li>No pagar >218,29€/m²</li>'
+        out += '<li>S3 debe ser más barato que S1/S2</li>'
+        out += '<li>Señala inconsistencias de precios</li>'
+        out += '<li>Pago rápido si aceptan tu precio</li>'
+        out += '<li>Primera oferta ~30% más baja</li>'
+        out += '</ol>'
+        out += '</div>'
+        appendFloatingChat('🚗 Asistente', out)
+        return
+      }
+
+      // detect sótano comparison
+      const sotanoMatch = t.match(/\b(sotano|sótano)\s*(\d+)/i)
+      if(sotanoMatch){
+        const sotanoNum = sotanoMatch[2]
+        const sotanoPlazas = plazas.filter(p=>(p.ubicacion||'').match(new RegExp(`sotano\\s*${sotanoNum}|sótano\\s*${sotanoNum}`,'i'))).map(p=>{
+          const oferta = ofertaFor(p)
+          const pricePerM2 = p.metros ? (p.precio / p.metros) : 999
+          const ofertaPerM2 = p.metros ? (oferta / p.metros) : 999
+          return {...p, oferta, pricePerM2, ofertaPerM2}
+        }).sort((a,b)=>a.pricePerM2 - b.pricePerM2)
+        
+        if(sotanoPlazas.length === 0){
+          appendFloatingChat('🚗 Asistente', `No encuentro plazas en sótano ${sotanoNum}.`)
+          return
+        }
+        
+        let out = `<div style="margin-bottom:8px"><strong style="color:#0066cc">🏢 Sótano ${sotanoNum}</strong> (${sotanoPlazas.length} plazas)</div>`
+        const avgPrice = sotanoPlazas.reduce((sum,p)=>sum + p.precio, 0) / sotanoPlazas.length
+        const avgPriceM2 = sotanoPlazas.reduce((sum,p)=>sum + p.pricePerM2, 0) / sotanoPlazas.length
+        out += `<div style="font-size:0.9em;color:#666;margin-bottom:8px">📊 Precio medio: ${fmtMoney(avgPrice)} | €/m²: ${fmtMoney(avgPriceM2)}</div>`
+        out += '<ol style="margin:8px 0;padding-left:20px;line-height:1.8;font-size:0.95em">'
+        sotanoPlazas.slice(0,6).forEach(p=>{
+          out += `<li><strong>Plaza ${p.plaza}</strong> — ${p.metros} m²<br>`
+          out += `💰 ${p.precio_str} (${fmtMoney(p.pricePerM2)}/m²)<br>OFERTA: ${fmtMoney(p.oferta)} (${fmtMoney(p.ofertaPerM2)}/m²)</li>`
+        })
+        out += '</ol>'
+        if(sotanoPlazas.length > 6) out += `<div style="font-size:0.9em;color:#666">... y ${sotanoPlazas.length - 6} más</div>`
+        appendFloatingChat('🚗 Asistente', out)
+        return
+      }
+
       // fallback
-      appendFloatingChat('🚗 Asistente', `Escribe:<br>• "plaza 401" para ver detalles<br>• "top" o "mejores" para ver TOP 10 chollos<br>• "calculame el precio del m2 si la plaza 401 vale 9000€"<br>• "APACAAQUITUCOCHE marcar 401 favorito"`)
+      appendFloatingChat('🚗 Asistente', `Escribe <strong>"ayuda"</strong> para ver todos los comandos disponibles.`)
     }
 
     function attachFloatingButtons(){
@@ -1202,6 +1460,15 @@
       }
     })
 
+    // Prevent page scroll when scrolling inside floating chat
+    floatingChatDiv.addEventListener('touchstart', e=>{ e.stopPropagation() })
+    floatingChatDiv.addEventListener('touchmove', e=>{ e.stopPropagation() })
+    
+    // Also prevent for the embedded agent chat
+    const embeddedChat = document.getElementById('chat')
+    embeddedChat.addEventListener('touchstart', e=>{ e.stopPropagation() })
+    embeddedChat.addEventListener('touchmove', e=>{ e.stopPropagation() })
+
     // Add hover effect to floating button
     floatingBtn.addEventListener('mouseenter', ()=>{ floatingBtn.style.transform = 'scale(1.1)'; floatingBtn.style.boxShadow = '0 6px 30px rgba(124,58,237,0.6)' })
     floatingBtn.addEventListener('mouseleave', ()=>{ floatingBtn.style.transform = 'scale(1)'; floatingBtn.style.boxShadow = '0 4px 20px rgba(124,58,237,0.4)' })
@@ -1227,7 +1494,14 @@
       // ensure ORIGINAL button state is consistent
       document.querySelectorAll('#tabBar .tabBtn').forEach(b=>{ b.classList.toggle('active', b.dataset.tab===name) })
       // if showing gastos and it's not rendered yet, render it
-      if(name==='gastos') setTimeout(()=>{ if(typeof renderGastosTable === 'function') renderGastosTable() },50)
+      if(name==='gastos'){ 
+        setTimeout(()=>{ 
+          if(typeof renderGastosTable === 'function') renderGastosTable() 
+          // Scroll gastos section into view when tab is selected
+          const gastosSection = document.getElementById('gastosSection')
+          if(gastosSection) gastosSection.scrollIntoView({behavior:'smooth',block:'start'})
+        },50)
+      }
     }
 
     document.querySelectorAll('#tabBar .tabBtn').forEach(b=>{
