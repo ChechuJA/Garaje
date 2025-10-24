@@ -932,6 +932,48 @@
         return
       }
       
+      // detect HELP/FAQ command
+      if(/\b(ayuda|help|comandos?|guia|faq|que puedo hacer|como funciona)/i.test(t)){
+        let out = '<div style="margin-bottom:16px"><strong style="color:#2563eb;font-size:1.1em">📚 Guía de Comandos del Agente</strong></div>'
+        
+        out += '<div style="background:#f0f9ff;padding:12px;border-radius:8px;margin:12px 0;border-left:4px solid #2563eb">'
+        out += '<strong style="color:#2563eb">🔍 Consultar Plazas</strong><br>'
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;margin:4px 2px;display:inline-block">401</span> '
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;margin:4px 2px;display:inline-block">plaza 401</span><br>'
+        out += '<span style="font-size:0.9em;color:#666">→ Ver detalles completos de una plaza específica</span>'
+        out += '</div>'
+        
+        out += '<div style="background:#f0fdf4;padding:12px;border-radius:8px;margin:12px 0;border-left:4px solid #059669">'
+        out += '<strong style="color:#059669">🏆 Top Oportunidades</strong><br>'
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;margin:4px 2px;display:inline-block">top</span> '
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;margin:4px 2px;display:inline-block">mejores</span> '
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;margin:4px 2px;display:inline-block">chollos</span><br>'
+        out += '<span style="font-size:0.9em;color:#666">→ Ver las 10 mejores oportunidades ordenadas por precio/m² y ahorro</span>'
+        out += '</div>'
+        
+        out += '<div style="background:#fef3f2;padding:12px;border-radius:8px;margin:12px 0;border-left:4px solid #dc2626">'
+        out += '<strong style="color:#dc2626">🧮 Calculadora de Precio/m²</strong><br>'
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;display:inline-block;margin:4px 2px;font-size:0.85em">calculame el precio del m2 si la plaza 401 vale 9000</span><br>'
+        out += '<span style="font-size:0.9em;color:#666">→ Calcular qué precio/m² resulta si pagas una cantidad específica</span>'
+        out += '</div>'
+        
+        out += '<div style="background:#fef9e7;padding:12px;border-radius:8px;margin:12px 0;border-left:4px solid #f59e0b">'
+        out += '<strong style="color:#f59e0b">⭐ Marcar Favorita o Vendida</strong><br>'
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;display:inline-block;margin:4px 2px;font-size:0.85em">APACAAQUITUCOCHE marcar 401 favorito</span><br>'
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;display:inline-block;margin:4px 2px;font-size:0.85em">APACAAQUITUCOCHE marcar 401 vendida</span><br>'
+        out += '<span style="font-size:0.9em;color:#666">→ Guardar favoritos o marcar plazas como vendidas</span>'
+        out += '</div>'
+        
+        out += '<div style="margin-top:16px;padding:12px;background:#f9fafb;border-radius:8px;border:1px solid #d1d5db">'
+        out += '💡 <strong>Consejo:</strong> Usa el comando <strong>"top"</strong> al llegar al garaje para ver las mejores opciones. '
+        out += 'Luego consulta cada plaza por número para ver detalles completos. '
+        out += 'Usa la calculadora para negociar on-site: "calculame ... si la plaza 401 vale 8500"'
+        out += '</div>'
+        
+        appendChat('APACAAQUITUCOCHE', out)
+        return
+      }
+      
       // detect TOP command
       if(/\b(top|mejores|chollos?|oportunidades?|recomend)/i.test(t)){
         let out = '<div style="margin-bottom:12px"><strong style="color:#059669">🏆 TOP 10 Mejores Oportunidades</strong></div>'
@@ -1239,6 +1281,48 @@
           }
         }
         appendFloatingChat('🚗 Asistente', `No reconozco ese comando: ${cmd.replace(/</g,'&lt;')}`)
+        return
+      }
+
+      // detect HELP/FAQ command
+      if(/\b(ayuda|help|comandos?|guia|faq|que puedo hacer|como funciona)/i.test(t)){
+        let out = '<div style="margin-bottom:16px"><strong style="color:#2563eb;font-size:1.1em">📚 Guía de Comandos del Agente</strong></div>'
+        
+        out += '<div style="background:#f0f9ff;padding:12px;border-radius:8px;margin:12px 0;border-left:4px solid #2563eb">'
+        out += '<strong style="color:#2563eb">🔍 Consultar Plazas</strong><br>'
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;margin:4px 2px;display:inline-block">401</span> '
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;margin:4px 2px;display:inline-block">plaza 401</span><br>'
+        out += '<span style="font-size:0.9em;color:#666">→ Ver detalles completos de una plaza específica</span>'
+        out += '</div>'
+        
+        out += '<div style="background:#f0fdf4;padding:12px;border-radius:8px;margin:12px 0;border-left:4px solid #059669">'
+        out += '<strong style="color:#059669">🏆 Top Oportunidades</strong><br>'
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;margin:4px 2px;display:inline-block">top</span> '
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;margin:4px 2px;display:inline-block">mejores</span> '
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;margin:4px 2px;display:inline-block">chollos</span><br>'
+        out += '<span style="font-size:0.9em;color:#666">→ Ver las 10 mejores oportunidades ordenadas por precio/m² y ahorro</span>'
+        out += '</div>'
+        
+        out += '<div style="background:#fef3f2;padding:12px;border-radius:8px;margin:12px 0;border-left:4px solid #dc2626">'
+        out += '<strong style="color:#dc2626">🧮 Calculadora de Precio/m²</strong><br>'
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;display:inline-block;margin:4px 2px;font-size:0.85em">calculame el precio del m2 si la plaza 401 vale 9000</span><br>'
+        out += '<span style="font-size:0.9em;color:#666">→ Calcular qué precio/m² resulta si pagas una cantidad específica</span>'
+        out += '</div>'
+        
+        out += '<div style="background:#fef9e7;padding:12px;border-radius:8px;margin:12px 0;border-left:4px solid #f59e0b">'
+        out += '<strong style="color:#f59e0b">⭐ Marcar Favorita o Vendida</strong><br>'
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;display:inline-block;margin:4px 2px;font-size:0.85em">APACAAQUITUCOCHE marcar 401 favorito</span><br>'
+        out += '<span style="font-family:monospace;background:#fff;padding:2px 6px;border-radius:4px;display:inline-block;margin:4px 2px;font-size:0.85em">APACAAQUITUCOCHE marcar 401 vendida</span><br>'
+        out += '<span style="font-size:0.9em;color:#666">→ Guardar favoritos o marcar plazas como vendidas</span>'
+        out += '</div>'
+        
+        out += '<div style="margin-top:16px;padding:12px;background:#f9fafb;border-radius:8px;border:1px solid #d1d5db">'
+        out += '💡 <strong>Consejo:</strong> Usa el comando <strong>"top"</strong> al llegar al garaje para ver las mejores opciones. '
+        out += 'Luego consulta cada plaza por número para ver detalles completos. '
+        out += 'Usa la calculadora para negociar on-site: "calculame ... si la plaza 401 vale 8500"'
+        out += '</div>'
+        
+        appendFloatingChat('🚗 Asistente', out)
         return
       }
 
