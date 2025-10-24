@@ -62,6 +62,17 @@
     <span id="searchResult" style="margin-left:12px;color:#222"></span>
   </div>
 
+  <!-- Chat-like agent panel -->
+  <section id="agentPanel" style="margin-top:18px;border:1px solid #ddd;padding:12px;border-radius:8px;background:#fbfbfc">
+    <h2 style="margin:0 0 8px 0">Agente "Gatito" — Pregúntame por una plaza</h2>
+    <div id="chat" style="height:220px;overflow:auto;border:1px solid #eee;padding:8px;background:#fff;border-radius:6px"></div>
+    <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+      <input id="agentInput" placeholder="Escribe: 'plaza 401' o 'APACAAQUITUCOCHE marcar 401 favorito'" style="flex:1;padding:8px">
+      <button id="agentSend">Enviar</button>
+      <button id="agentClear">Limpiar</button>
+    </div>
+  </section>
+
   <div class="actions">
     <strong>Seleccionadas (máx 3):</strong>
     <span id="selectedList">—</span>
@@ -374,6 +385,123 @@
       sortBy(field, order)
       setHeaderArrow(field, order)
     })
+
+    // --- Agent logic: chat-like interface ---
+    function appendChat(who, html){
+      const chat = document.getElementById('chat')
+      const el = document.createElement('div')
+      el.style.marginBottom = '8px'
+      el.innerHTML = `<strong>${who}:</strong> <span>${html}</span>`
+      chat.appendChild(el)
+      chat.scrollTop = chat.scrollHeight
+    }
+
+    function agentReplyForPlaza(n){
+      const p = lookupPlaza(n)
+      if(!p) return `No encuentro la plaza ${n}.`
+      const ahorro = p.estimado - p.precio
+      // extra fields: metros, sotano if present in ubicacion detection
+      const sotanoMatch = (p.ubicacion||'').match(/sotano\s*(\d+)/i) || (p.ubicacion||'').match(/sótano\s*(\d+)/i)
+      const sotano = sotanoMatch ? sotanoMatch[1] : 'N/D'
+      const por_m2 = p.precio && p.metros ? (p.precio / p.metros) : null
+      const por_m2_estim = p.estimado && p.metros ? (p.estimado / p.metros) : null
+      let out = ''
+      out += `<div>Plaza <strong>${p.plaza}</strong> — ${p.ubicacion || ''} — ${p.metros} m²</div>`
+      out += `<div>Precio: <strong>${p.precio_str}</strong> — Estimado: <strong>${fmtMoney(p.estimado)}</strong> — Ahorro: <strong style="color:${ahorro>=0? '#0a0':'#d00'}">${fmtMoney(ahorro)}</strong></div>`
+      if(p.metros) out += `<div>Precio/m²: ${por_m2 ? fmtMoney(por_m2) : 'N/D'} — Estimado/m²: ${por_m2_estim ? fmtMoney(por_m2_estim) : 'N/D'}</div>`
+      out += `<div>Sótano: <strong>${sotano}</strong></div>`
+      // actions
+      out += `<div style="margin-top:6px"><button data-action="fav" data-plaza="${p.plaza}">Marcar favorito</button> <button data-action="sold" data-plaza="${p.plaza}">Marcar vendida</button></div>`
+      return out
+    }
+
+    function processAgentInput(text){
+      const t = (text||'').trim()
+      if(!t) return
+      appendChat('Tú', t.replace(/</g,'&lt;'))
+      // detect commands: 'plaza 401' or just a number
+      const plazaMatch = t.match(/\bplaza\s*(\d+)\b/i) || t.match(/^\s*(\d+)\s*$/)
+      // detect APACAAQUITUCOCHE commands like: APACAAQUITUCOCHE marcar 401 favorito
+      const special = t.match(/APACAAQUITUCOCHE\s+([^\n]+)/i)
+      if(special){
+        const cmd = special[1].trim()
+        // e.g. 'marcar 401 favorito' or 'marcar 401 vendida'
+        const m = cmd.match(/marcar\s*(\d+)\s*(favorito|vendida|vendido|vende)/i)
+        if(m){
+          const id = Number(m[1])
+          const what = m[2].toLowerCase()
+          if(/favorito/.test(what)){
+            const favs = JSON.parse(localStorage.getItem('plazas_favs')||'{}')
+            favs[id] = true
+            localStorage.setItem('plazas_favs', JSON.stringify(favs))
+            render()
+            appendChat('Gatito', `He marcado la plaza ${id} como favorito (por petición APACAAQUITUCOCHE).`)
+            return
+          }
+          if(/vend|vendida|vende/.test(what)){
+            const sold = JSON.parse(localStorage.getItem('plazas_sold')||'{}')
+            sold[id] = true
+            localStorage.setItem('plazas_sold', JSON.stringify(sold))
+            render()
+            appendChat('Gatito', `He marcado la plaza ${id} como VENDIDA (por petición APACAAQUITUCOCHE).`)
+            return
+          }
+        }
+        appendChat('Gatito', `Comando APACAAQUITUCOCHE no reconocido: ${cmd.replace(/</g,'&lt;')}`)
+        return
+      }
+      if(plazaMatch){
+        const id = Number(plazaMatch[1])
+        const reply = agentReplyForPlaza(id)
+        appendChat('Gatito', reply)
+        // attach event handlers for inline buttons
+        setTimeout(()=>attachAgentButtons(),50)
+        return
+      }
+      // fallback: try to detect a plain number
+      const numOnly = t.match(/^(\d{2,4})$/)
+      if(numOnly){
+        const id = Number(numOnly[1])
+        const reply = agentReplyForPlaza(id)
+        appendChat('Gatito', reply)
+        setTimeout(()=>attachAgentButtons(),50)
+        return
+      }
+      appendChat('Gatito', 'No he entendido. Pide por ejemplo "plaza 401" o usa "APACAAQUITUCOCHE marcar 401 favorito"')
+    }
+
+    function attachAgentButtons(){
+      document.querySelectorAll('#chat button[data-action]').forEach(b=>{
+        if(b.dataset.bound) return;
+        b.dataset.bound = '1';
+        b.addEventListener('click', e=>{
+          const a = b.dataset.action
+          const id = Number(b.dataset.plaza)
+          if(a === 'fav'){
+            const favs = JSON.parse(localStorage.getItem('plazas_favs')||'{}')
+            favs[id] = true
+            localStorage.setItem('plazas_favs', JSON.stringify(favs))
+            render();
+            appendChat('Gatito', `Plaza ${id} marcada como favorito.`)
+          } else if(a === 'sold'){
+            const sold = JSON.parse(localStorage.getItem('plazas_sold')||'{}')
+            sold[id] = true
+            localStorage.setItem('plazas_sold', JSON.stringify(sold))
+            render();
+            appendChat('Gatito', `Plaza ${id} marcada como VENDIDA.`);
+          }
+        })
+      })
+    }
+
+    document.getElementById('agentSend').addEventListener('click', ()=>{
+      const val = document.getElementById('agentInput').value
+      document.getElementById('agentInput').value = ''
+      processAgentInput(val)
+    })
+    document.getElementById('agentInput').addEventListener('keydown', e=>{ if(e.key === 'Enter') { e.preventDefault(); document.getElementById('agentSend').click() } })
+    document.getElementById('agentClear').addEventListener('click', ()=>{ document.getElementById('chat').innerHTML = '' })
+
   </script>
 </body>
 </html>
