@@ -64,7 +64,7 @@
 
   <!-- Chat-like agent panel -->
   <section id="agentPanel" style="margin-top:18px;border:1px solid #ddd;padding:12px;border-radius:8px;background:#fbfbfc">
-    <h2 style="margin:0 0 8px 0">Agente "Gatito" — Pregúntame por una plaza</h2>
+    <h2 style="margin:0 0 8px 0">Agente "APACAAQUITUCOCHE" — Pregúntame por una plaza</h2>
     <div id="chat" style="height:220px;overflow:auto;border:1px solid #eee;padding:8px;background:#fff;border-radius:6px"></div>
     <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
       <input id="agentInput" placeholder="Escribe: 'plaza 401' o 'APACAAQUITUCOCHE marcar 401 favorito'" style="flex:1;padding:8px">
@@ -435,7 +435,7 @@
             favs[id] = true
             localStorage.setItem('plazas_favs', JSON.stringify(favs))
             render()
-            appendChat('Gatito', `He marcado la plaza ${id} como favorito (por petición APACAAQUITUCOCHE).`)
+            appendChat('APACAAQUITUCOCHE', `He marcado la plaza ${id} como favorito (por petición APACAAQUITUCOCHE).`)
             return
           }
           if(/vend|vendida|vende/.test(what)){
@@ -443,17 +443,17 @@
             sold[id] = true
             localStorage.setItem('plazas_sold', JSON.stringify(sold))
             render()
-            appendChat('Gatito', `He marcado la plaza ${id} como VENDIDA (por petición APACAAQUITUCOCHE).`)
+            appendChat('APACAAQUITUCOCHE', `He marcado la plaza ${id} como VENDIDA (por petición APACAAQUITUCOCHE).`)
             return
           }
         }
-        appendChat('Gatito', `Comando APACAAQUITUCOCHE no reconocido: ${cmd.replace(/</g,'&lt;')}`)
+        appendChat('APACAAQUITUCOCHE', `Comando APACAAQUITUCOCHE no reconocido: ${cmd.replace(/</g,'&lt;')}`)
         return
       }
       if(plazaMatch){
         const id = Number(plazaMatch[1])
         const reply = agentReplyForPlaza(id)
-        appendChat('Gatito', reply)
+        appendChat('APACAAQUITUCOCHE', reply)
         // attach event handlers for inline buttons
         setTimeout(()=>attachAgentButtons(),50)
         return
@@ -463,11 +463,11 @@
       if(numOnly){
         const id = Number(numOnly[1])
         const reply = agentReplyForPlaza(id)
-        appendChat('Gatito', reply)
+        appendChat('APACAAQUITUCOCHE', reply)
         setTimeout(()=>attachAgentButtons(),50)
         return
       }
-      appendChat('Gatito', 'No he entendido. Pide por ejemplo "plaza 401" o usa "APACAAQUITUCOCHE marcar 401 favorito"')
+      appendChat('APACAAQUITUCOCHE', 'No he entendido. Pide por ejemplo "plaza 401" o usa "APACAAQUITUCOCHE marcar 401 favorito"')
     }
 
     function attachAgentButtons(){
@@ -482,13 +482,13 @@
             favs[id] = true
             localStorage.setItem('plazas_favs', JSON.stringify(favs))
             render();
-            appendChat('Gatito', `Plaza ${id} marcada como favorito.`)
+            appendChat('APACAAQUITUCOCHE', `Plaza ${id} marcada como favorito.`)
           } else if(a === 'sold'){
             const sold = JSON.parse(localStorage.getItem('plazas_sold')||'{}')
             sold[id] = true
             localStorage.setItem('plazas_sold', JSON.stringify(sold))
             render();
-            appendChat('Gatito', `Plaza ${id} marcada como VENDIDA.`);
+            appendChat('APACAAQUITUCOCHE', `Plaza ${id} marcada como VENDIDA.`);
           }
         })
       })
