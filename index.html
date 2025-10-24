@@ -40,8 +40,9 @@
       </select>
     </label>
 
-    <button id="recommend">Recomendar mejor lote (top 3 ahorro, no vendidas)</button>
-    <label style="margin-left:8px"><input type="checkbox" id="hideSold"> Ocultar vendidas</label>
+  <button id="recommend">Recomendar mejor lote</button>
+  <label>N: <input id="recommendN" type="number" min="1" value="3" style="width:60px"></label>
+  <label style="margin-left:8px"><input type="checkbox" id="hideSold"> Ocultar vendidas</label>
     <button id="share">Compartir vista</button>
     <button id="exportCsv">Exportar CSV</button>
     <button id="exportSel">Exportar selección (JSON)</button>
@@ -49,6 +50,8 @@
     <input type="file" id="importFile" accept="application/json" style="display:none">
     <div style="margin-left:auto">
       <span class="badge" id="selectedCount">Seleccionadas: 0</span>
+      <span class="badge" id="totalSavings" style="margin-left:8px">Ahorro total: 0 €</span>
+      <span class="badge" id="recommendedSavings" style="margin-left:8px">Ahorro recomendado: 0 €</span>
     </div>
   </div>
 
@@ -214,6 +217,9 @@
       const listSpan = document.getElementById('selectedList')
       if(selected.size===0) listSpan.textContent = '—'
       else listSpan.textContent = Array.from(selected).join(', ')
+      // update total savings for current selection
+      const ssum = Array.from(selected).map(n=>{ const p = plazas.find(x=>x.plaza===n); return p ? (p.estimado - p.precio) : 0 }).reduce((a,b)=>a+b,0)
+      document.getElementById('totalSavings').textContent = 'Ahorro total: ' + fmtMoney(ssum)
     }
 
     function sortBy(field,order){
@@ -262,13 +268,18 @@
     document.getElementById('sortField').onchange = ()=>{ sortBy(document.getElementById('sortField').value, document.getElementById('sortOrder').value); updateUrlState() }
     document.getElementById('sortOrder').onchange = ()=>{ sortBy(document.getElementById('sortField').value, document.getElementById('sortOrder').value); updateUrlState() }
     document.getElementById('recommend').onclick = ()=>{
-      // seleccionar top 3 por ahorro (estimado - precio) desc
+      // seleccionar top N por ahorro (estimado - precio) desc, respetando vendidas
       const sold = JSON.parse(localStorage.getItem('plazas_sold')||'{}')
-      plazas.sort((a,b)=> (b.estimado - b.precio) - (a.estimado - a.precio))
-      const top = plazas.filter(p=>!sold[p.plaza]).slice(0,3).map(p=>p.plaza)
+      const N = Math.max(1, Number(document.getElementById('recommendN').value) || 3)
+      const candidates = plazas.filter(p=>!sold[p.plaza])
+      candidates.sort((a,b)=> (b.estimado - b.precio) - (a.estimado - a.precio))
+      const top = candidates.slice(0,N).map(p=>p.plaza)
       selected = new Set(top)
       localStorage.setItem('plazas_selected', JSON.stringify(Array.from(selected)))
       render(); updateUrlState()
+      // update recommended savings badge
+      const recSavings = top.map(n=>{ const p = plazas.find(x=>x.plaza===n); return p ? (p.estimado - p.precio) : 0 }).reduce((a,b)=>a+b,0)
+      document.getElementById('recommendedSavings').textContent = 'Ahorro recomendado: ' + fmtMoney(recSavings)
     }
     document.getElementById('share').onclick = shareUrl
     document.getElementById('clear').onclick = ()=>{ selected.clear(); render(); updateUrlState() }
