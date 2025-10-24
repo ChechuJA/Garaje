@@ -931,7 +931,45 @@
         setTimeout(()=>attachAgentButtons(),50)
         return
       }
-      appendChat('APACAAQUITUCOCHE', 'No he entendido. Pide por ejemplo "plaza 401" o usa "APACAAQUITUCOCHE marcar 401 favorito"')
+      
+      // detect TOP command
+      if(/\b(top|mejores|chollos?|oportunidades?|recomend)/i.test(t)){
+        let out = '<div style="margin-bottom:12px"><strong style="color:#059669">🏆 TOP 10 Mejores Oportunidades</strong></div>'
+        
+        const ranked = plazas.map(p=>{
+          const oferta = ofertaFor(p)
+          const ahorro = p.precio - oferta
+          const pricePerM2 = p.metros ? (p.precio / p.metros) : 999
+          const ofertaPerM2 = p.metros ? (oferta / p.metros) : 999
+          return {...p, oferta, ahorro, pricePerM2, ofertaPerM2}
+        }).sort((a,b)=>{
+          if(Math.abs(a.pricePerM2 - b.pricePerM2) > 10) return a.pricePerM2 - b.pricePerM2
+          return b.ahorro - a.ahorro
+        }).slice(0,10)
+
+        out += '<ol style="margin:8px 0;padding-left:20px;line-height:1.9">'
+        ranked.forEach((p,i)=>{
+          const badge = i < 3 ? (i===0 ? '🥇' : i===1 ? '🥈' : '🥉') : `${i+1}.`
+          const highlight = i < 3 ? 'style="background:#f0fdf4;padding:8px;border-radius:6px;margin:4px 0"' : 'style="margin:4px 0"'
+          out += `<li ${highlight}><strong>Plaza ${p.plaza}</strong> (${p.ubicacion})<br>`
+          out += `📏 ${p.metros} m² — 💰 ${p.precio_str} (${fmtMoney(p.pricePerM2)}/m²)<br>`
+          out += `<span style="color:#059669">💵 OFERTA: ${fmtMoney(p.oferta)} (${fmtMoney(p.ofertaPerM2)}/m²)</span><br>`
+          out += `📉 Ahorro: <strong>${fmtMoney(p.ahorro)}</strong>`
+          if(p.pricePerM2 <= TARGET_PER_M2) out += ` ✅ <span style="color:#059669;font-size:0.9em">Ya en objetivo</span>`
+          out += '</li>'
+        })
+        out += '</ol>'
+        
+        out += '<div style="margin-top:12px;padding:10px;background:#fff9e6;border-radius:8px;border:1px solid #fbbf24">'
+        out += '💡 <strong>Estrategia:</strong> Visita las 3 primeras (🥇🥈🥉) y negocia agresivamente. '
+        out += 'Si necesitas más espacio, plazas 368/336 son enormes y ya tienen buen €/m².'
+        out += '</div>'
+
+        appendChat('APACAAQUITUCOCHE', out)
+        return
+      }
+      
+      appendChat('APACAAQUITUCOCHE', 'No he entendido. Pide por ejemplo "plaza 401", "top 10" o usa "APACAAQUITUCOCHE marcar 401 favorito"')
     }
 
     function attachAgentButtons(){
@@ -1074,8 +1112,47 @@
         return
       }
 
+      // detect TOP command
+      if(/\b(top|mejores|chollos?|oportunidades?|recomend)/i.test(t)){
+        let out = '<div style="margin-bottom:12px"><strong style="color:#059669">🏆 TOP 10 Mejores Oportunidades</strong></div>'
+        
+        // Calculate all plazas with oferta and sort by best value (lowest price/m² and highest savings)
+        const ranked = plazas.map(p=>{
+          const oferta = ofertaFor(p)
+          const ahorro = p.precio - oferta
+          const pricePerM2 = p.metros ? (p.precio / p.metros) : 999
+          const ofertaPerM2 = p.metros ? (oferta / p.metros) : 999
+          return {...p, oferta, ahorro, pricePerM2, ofertaPerM2}
+        }).sort((a,b)=>{
+          // Priority: 1) lowest price/m² 2) highest absolute savings
+          if(Math.abs(a.pricePerM2 - b.pricePerM2) > 10) return a.pricePerM2 - b.pricePerM2
+          return b.ahorro - a.ahorro
+        }).slice(0,10)
+
+        out += '<ol style="margin:8px 0;padding-left:20px;line-height:1.9">'
+        ranked.forEach((p,i)=>{
+          const badge = i < 3 ? (i===0 ? '🥇' : i===1 ? '🥈' : '🥉') : `${i+1}.`
+          const highlight = i < 3 ? 'style="background:#f0fdf4;padding:8px;border-radius:6px;margin:4px 0"' : 'style="margin:4px 0"'
+          out += `<li ${highlight}><strong>Plaza ${p.plaza}</strong> (${p.ubicacion})<br>`
+          out += `📏 ${p.metros} m² — 💰 ${p.precio_str} (${fmtMoney(p.pricePerM2)}/m²)<br>`
+          out += `<span style="color:#059669">💵 OFERTA: ${fmtMoney(p.oferta)} (${fmtMoney(p.ofertaPerM2)}/m²)</span><br>`
+          out += `📉 Ahorro: <strong>${fmtMoney(p.ahorro)}</strong>`
+          if(p.pricePerM2 <= TARGET_PER_M2) out += ` ✅ <span style="color:#059669;font-size:0.9em">Ya en objetivo</span>`
+          out += '</li>'
+        })
+        out += '</ol>'
+        
+        out += '<div style="margin-top:12px;padding:10px;background:#fff9e6;border-radius:8px;border:1px solid #fbbf24">'
+        out += '💡 <strong>Estrategia:</strong> Visita las 3 primeras (🥇🥈🥉) y negocia agresivamente. '
+        out += 'Si necesitas más espacio, plazas 368/336 son enormes y ya tienen buen €/m².'
+        out += '</div>'
+
+        appendFloatingChat('🚗 Asistente', out)
+        return
+      }
+
       // fallback
-      appendFloatingChat('🚗 Asistente', `Escribe:<br>• "plaza 401" para ver detalles<br>• "calculame el precio del m2 si la plaza 401 vale 9000€"<br>• "APACAAQUITUCOCHE marcar 401 favorito"`)
+      appendFloatingChat('🚗 Asistente', `Escribe:<br>• "plaza 401" para ver detalles<br>• "top" o "mejores" para ver TOP 10 chollos<br>• "calculame el precio del m2 si la plaza 401 vale 9000€"<br>• "APACAAQUITUCOCHE marcar 401 favorito"`)
     }
 
     function attachFloatingButtons(){
