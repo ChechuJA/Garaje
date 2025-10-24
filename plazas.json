@@ -30,5 +30,5 @@
   {"ur":"60480025","plaza":368,"precio":13000.00,"precio_str":"13.000,00 €","ubicacion":"P.S.3","metros":62.97,"estimado":13745.57,"diferencia":-745.57},
   {"ur":"60480043","plaza":369,"precio":13000.00,"precio_str":"13.000,00 €","ubicacion":"P.S.3","metros":50.03,"estimado":10920.93,"diferencia":2079.07},
   {"ur":"60480061","plaza":372,"precio":11000.00,"precio_str":"11.000,00 €","ubicacion":"P.S.3","metros":28.60,"estimado":6243.03,"diferencia":4756.97},
-  {"ur":"60480096","plaza":401,"precio":9000.00,"precio_str":"9.000,00 €","ubicacion":"P.S.3","metros":41.23,"estimado":9000.00,"diferencia":0.00}
+  {"ur":"60480096","plaza":401,"precio":13000.00,"precio_str":"13.000,00 €","ubicacion":"P.S.3","metros":41.23,"estimado":9000.00,"diferencia":-4000.00}
 ]
