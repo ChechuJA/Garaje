@@ -6,31 +6,35 @@
   <title>Plazas Garaje — Análisis interactivo</title>
   <style>
     :root{
-      --bg:#f5f7fb;
+      --bg:#f3f6ff;
       --card:#ffffff;
       --muted:#6b7280;
-      --accent:#0366d6;
+      --accent:#0066cc;
+      --accent-2: #7c3aed;
       --success:#0a8a3a;
       --danger:#d64545;
+      --glass: rgba(255,255,255,0.6);
     }
     html,body{height:100%;margin:0}
-    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;max-width:1200px;margin:18px auto;padding:0 16px;background:var(--bg);color:#111}
-    header.appbar{display:flex;align-items:center;gap:12px;padding:16px;border-radius:10px;background:linear-gradient(90deg, #ffffff, #f6f9ff);box-shadow:0 6px 18px rgba(20,30,60,0.06);margin-bottom:18px}
-    header.appbar h1{margin:0;font-size:1.2rem}
+    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;max-width:1200px;margin:18px auto;padding:0 16px;background:linear-gradient(180deg,#e9f0ff 0%, #f9fbff 100%);color:#0f172a}
+    header.appbar{display:flex;align-items:center;gap:12px;padding:18px;border-radius:12px;background:linear-gradient(90deg,var(--accent),var(--accent-2));box-shadow:0 8px 30px rgba(60,80,120,0.12);color:#fff;margin-bottom:18px}
+    header.appbar h1{margin:0;font-size:1.2rem;font-weight:700}
     .container{background:var(--card);padding:16px;border-radius:10px;box-shadow:0 6px 18px rgba(20,30,60,0.03)}
     .controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
     .controls label, .controls select, .controls input {font-size:0.95rem}
-    .badge{display:inline-block;padding:4px 10px;background:#f0f6ff;color:#023e8a;border-radius:999px;font-weight:600}
+    .badge{display:inline-block;padding:6px 12px;background:linear-gradient(90deg,#eef6ff,#e8f0ff);color:var(--accent);border-radius:999px;font-weight:700;border:1px solid rgba(3,102,204,0.08)}
     .actions{margin-top:12px}
     .hint{color:var(--muted);font-size:0.95rem}
-    button{padding:8px 12px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);background:#fff;cursor:pointer}
-    button.primary{background:var(--accent);color:#fff;border:none}
-    button.positive{background:var(--success);color:#fff;border:none}
-    button.danger{background:var(--danger);color:#fff;border:none}
+    button{padding:8px 12px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);background:linear-gradient(180deg,#fff,#fbfdff);cursor:pointer;box-shadow:0 2px 6px rgba(12,20,40,0.04)}
+    button.primary{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#fff;border:none;box-shadow:0 6px 18px rgba(124,58,237,0.12)}
+    button.positive{background:linear-gradient(90deg,#10b981,#059669);color:#fff;border:none}
+    button.danger{background:linear-gradient(90deg,#f97316,#ef4444);color:#fff;border:none}
+    button:hover{transform:translateY(-1px)}
     table{width:100%;border-collapse:collapse;margin-top:12px;border-radius:6px;overflow:hidden;box-shadow:0 4px 12px rgba(20,30,60,0.04)}
     th,td{padding:10px 12px;text-align:left}
-    thead th{background:#fbfdff;border-bottom:1px solid #eef3ff}
-    tbody tr:nth-child(even){background:#fbfbfd}
+    thead th{background:linear-gradient(180deg,#fff,#fbfdff);border-bottom:1px solid #eef3ff}
+    tbody tr:nth-child(even){background:linear-gradient(90deg,#ffffff,#fbfbff)}
+    tbody tr:hover{background:linear-gradient(90deg,#fffbe6,#f7fbff);transform:translateY(0);}
     tr.selected{background:linear-gradient(90deg,#f0fff4,#e9fff0)}
     tr.sold td{opacity:0.5;text-decoration:line-through}
     .meta{color:var(--muted);font-size:0.9rem}
@@ -48,10 +52,11 @@
   </style>
     <style>
       /* compact action buttons */
-      td button{border-radius:6px;padding:6px 8px;margin-right:6px;font-size:0.95rem}
-      td button.fav{background:transparent;border:1px solid #eee}
-      td button.note{background:#fff9f1;border:1px solid #ffedd5}
-      td button.sold{background:#fff;border:1px solid #eee}
+      td button{border-radius:8px;padding:6px 8px;margin-right:6px;font-size:0.95rem;border:1px solid rgba(0,0,0,0.04)}
+        td button.fav{background:linear-gradient(90deg,#fff8f0,#fff2f0);border:1px solid rgba(255,140,0,0.12)}
+        td button.note{background:linear-gradient(90deg,#fffbf0,#fff9f0);border:1px solid rgba(250,204,21,0.08)}
+        td button.sold{background:linear-gradient(90deg,#f8fafc,#fff);border:1px solid rgba(0,0,0,0.04)}
+        td button.fav:hover{box-shadow:0 6px 16px rgba(255,140,0,0.08)}
     </style>
 </head>
 <body>
@@ -62,6 +67,34 @@
 
   <div class="container">
     <p class="hint">Selecciona hasta 3 plazas para crear un lote. Usa el control de ordenación o haz clic en el encabezado de la tabla. Pulsa "Compartir vista" para obtener una URL con selección/orden.</p>
+
+    <!-- Tabla básica: compacta para móviles -->
+    <section id="basicCard" style="margin-top:12px;padding:12px;border-radius:8px;background:#fff;border:1px solid #eef3ff">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+        <div>
+          <strong>Tabla básica</strong>
+          <div class="meta" style="margin-top:6px">Versión compacta: sólo N.º Plaza, Precio, Estimado y Diferencia. Ideal para móviles.</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button id="btnShowBasic" class="primary">Ver tabla básica</button>
+          <button id="btnHideBasic" style="display:none">Ocultar</button>
+        </div>
+      </div>
+
+      <div id="basicTableWrap" style="margin-top:12px;display:none">
+        <table id="basicTable" style="width:100%;border-collapse:collapse">
+          <thead>
+            <tr style="background:#fbfdff;border-bottom:1px solid #eef3ff">
+              <th style="padding:8px">N.º Plaza</th>
+              <th style="padding:8px">Precio</th>
+              <th style="padding:8px">Estimado</th>
+              <th style="padding:8px">Diferencia</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
 
     <div class="controls">
     <label>Ordenar por:
@@ -124,7 +157,6 @@
     <thead>
       <tr>
         <th></th>
-  <th data-key="ur">UR/REGISTRAL <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
   <th data-key="plaza">Nº PLAZA <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
   <th data-key="precio">PRECIO <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
   <th data-key="itp">ITP (8%) <span class="sort-arrow"><span class="arrow asc" data-order="asc">▲</span><span class="arrow desc" data-order="desc">▼</span></span></th>
@@ -138,7 +170,6 @@
       </tr>
       <tr id="filtersRow">
         <th></th>
-        <th><input data-filter="ur" style="width:100%" placeholder="filtrar"></th>
         <th><input data-filter="plaza" style="width:100%" placeholder="filtrar"></th>
         <th><input data-filter="precio" style="width:100%" placeholder="filtrar"></th>
         <th><input data-filter="itp" style="width:100%" placeholder="filtrar"></th>
@@ -151,6 +182,36 @@
     </thead>
     <tbody></tbody>
   </table>
+
+  <!-- ORIGINAL backup table (keeps UR/REGISTRAL and full raw data) -->
+  <section id="originalPanel" style="margin-top:12px;padding:12px;border-radius:8px;background:#fff;border:1px solid #ffeedd">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <strong>ORIGINAL (backup)</strong>
+        <div class="meta">Copia con la columna UR/REGISTRAL y los datos crudos. Visible bajo demanda.</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button id="btnShowOriginal">Ver ORIGINAL</button>
+        <button id="btnHideOriginal" style="display:none">Ocultar</button>
+      </div>
+    </div>
+    <div id="originalWrap" style="margin-top:10px;display:none;overflow:auto">
+      <table id="originalTable" style="width:100%;border-collapse:collapse">
+        <thead>
+          <tr style="background:#fff7f0;border-bottom:1px solid #ffeedd">
+            <th style="padding:8px">UR/REGISTRAL</th>
+            <th style="padding:8px">N.º Plaza</th>
+            <th style="padding:8px">Precio</th>
+            <th style="padding:8px">Estimado</th>
+            <th style="padding:8px">Diferencia</th>
+            <th style="padding:8px">Ubicación</th>
+            <th style="padding:8px">Metros</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
 
   <script>
     const DATA_URL = './plazas.json'
@@ -173,8 +234,7 @@
         const isSold = !!sold[p.plaza]
         tr.innerHTML = `
           <td><input type="checkbox" data-plaza="${p.plaza}" ${selected.has(p.plaza)?'checked':''}></td>
-          <td>${p.ur}</td>
-          <td>${p.plaza} ${notes[p.plaza]? '<div style="font-size:0.8rem;color:#666">' + (notes[p.plaza].slice(0,60)) + (notes[p.plaza].length>60? '…':'' ) + '</div>':''}</td>
+          <td>${p.plaza} ${notes[p.plaza] ? `<div style="font-size:0.8rem;color:#666">${notes[p.plaza].slice(0,60)}${notes[p.plaza].length>60? '…':''}</div>` : ''}</td>
           <td>${p.precio_str}</td>
           <td>${fmtMoney(p.precio * 0.08)}</td>
           <td>${p.ubicacion}</td>
@@ -195,6 +255,56 @@
       attachCheckboxHandlers()
       updateSelectedUI()
       attachActionHandlers()
+    }
+
+      // Render ORIGINAL backup table (keeps UR and raw fields)
+      function renderOriginalTable(){
+        const tbody = document.querySelector('#originalTable tbody')
+        tbody.innerHTML = ''
+        plazas.forEach(p=>{
+          const tr = document.createElement('tr')
+          tr.innerHTML = `
+            <td style="padding:8px;border-bottom:1px solid #fff7f0">${p.ur}</td>
+            <td style="padding:8px;border-bottom:1px solid #fff7f0">${p.plaza}</td>
+            <td style="padding:8px;border-bottom:1px solid #fff7f0">${p.precio_str}</td>
+            <td style="padding:8px;border-bottom:1px solid #fff7f0">${fmtMoney(p.estimado)}</td>
+            <td style="padding:8px;border-bottom:1px solid #fff7f0;color:${(p.estimado - p.precio)>=0? '#0a0':'#d00'}">${fmtMoney(p.estimado - p.precio)}</td>
+            <td style="padding:8px;border-bottom:1px solid #fff7f0">${p.ubicacion}</td>
+            <td style="padding:8px;border-bottom:1px solid #fff7f0">${p.metros}</td>
+          `
+          tbody.appendChild(tr)
+        })
+      }
+
+      // ORIGINAL panel handlers
+      document.getElementById('btnShowOriginal').addEventListener('click', ()=>{
+        document.getElementById('originalWrap').style.display = 'block'
+        document.getElementById('btnShowOriginal').style.display = 'none'
+        document.getElementById('btnHideOriginal').style.display = 'inline-block'
+        renderOriginalTable()
+        document.getElementById('originalTable').scrollIntoView({behavior:'smooth',block:'center'})
+      })
+      document.getElementById('btnHideOriginal').addEventListener('click', ()=>{
+        document.getElementById('originalWrap').style.display = 'none'
+        document.getElementById('btnShowOriginal').style.display = 'inline-block'
+        document.getElementById('btnHideOriginal').style.display = 'none'
+      })
+
+    // Render a compact, mobile-friendly basic table with only plaza, precio, estimado, diferencia
+    function renderBasicTable(){
+      const wrap = document.getElementById('basicTableWrap')
+      const tbody = document.querySelector('#basicTable tbody')
+      tbody.innerHTML = ''
+      plazas.forEach(p=>{
+        const tr = document.createElement('tr')
+        tr.innerHTML = `
+          <td style="padding:8px;border-bottom:1px solid #f3f6ff">${p.plaza}</td>
+          <td style="padding:8px;border-bottom:1px solid #f3f6ff">${p.precio_str}</td>
+          <td style="padding:8px;border-bottom:1px solid #f3f6ff">${fmtMoney(p.estimado)}</td>
+          <td style="padding:8px;border-bottom:1px solid #f3f6ff;color:${(p.estimado - p.precio)>=0? '#0a0':'#d00'}">${fmtMoney(p.estimado - p.precio)}</td>
+        `
+        tbody.appendChild(tr)
+      })
     }
 
     function attachActionHandlers(){
@@ -247,7 +357,7 @@
         let visible = true
         const cells = tr.querySelectorAll('td')
         // updated column indexes after adding ITP column
-        const m = { ur:1, plaza:2, precio:3, itp:4, ubicacion:5, metros:6 }
+  const m = { plaza:1, precio:2, itp:3, ubicacion:4, metros:5 }
         for(const k in filters){
           const idx = m[k]
           if(idx===undefined) continue
@@ -455,6 +565,22 @@
       document.getElementById('sortOrder').value = order
       sortBy(field, order)
       setHeaderArrow(field, order)
+      // render basic table for mobile/quick view
+      renderBasicTable()
+    })
+
+    // Basic table show/hide handlers
+    document.getElementById('btnShowBasic').addEventListener('click', ()=>{
+      document.getElementById('basicTableWrap').style.display = 'block'
+      document.getElementById('btnShowBasic').style.display = 'none'
+      document.getElementById('btnHideBasic').style.display = 'inline-block'
+      // scroll to the basic table for mobile
+      document.getElementById('basicTable').scrollIntoView({behavior:'smooth',block:'center'})
+    })
+    document.getElementById('btnHideBasic').addEventListener('click', ()=>{
+      document.getElementById('basicTableWrap').style.display = 'none'
+      document.getElementById('btnShowBasic').style.display = 'inline-block'
+      document.getElementById('btnHideBasic').style.display = 'none'
     })
 
     // --- Agent logic: chat-like interface ---
