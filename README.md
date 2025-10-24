@@ -20,7 +20,11 @@ Mejoras posibles:
 Funcionalidad añadida:
 - Favoritos: marca una plaza como favorita (se guarda en localStorage del navegador).
 - Notas: añade notas libres por plaza (ej.: "tuberías encima", "columna molesta"). Las notas se guardan en localStorage y son visibles sólo en el navegador donde se escriben.
+ - Marcar como VENDIDA: puedes marcar una plaza como vendida (aparece tachada y con menor opacidad). Se guarda en localStorage.
+ - Filtros por columna: cajas de texto bajo los encabezados para filtrado instantáneo por UR, nº plaza, precio, ubicación o metros.
 
+ - Ocultar vendidas: activa el checkbox "Ocultar vendidas" para no mostrar las plazas ya vendidas.
+ - Recomendación: botón "Recomendar mejor lote" selecciona las 3 plazas con mayor ahorro (estimado − precio) entre las plazas no vendidas.
 Limitaciones:
 - Favoritos y notas son locales al navegador (no se sincronizan ni suben al repositorio). Si quieres sincronizar entre dispositivos, puedo añadir export/import o integrarlo con Gist/servicio.
 
